@@ -1,5 +1,5 @@
 # PAD Lab1
-A microservices based API for a school management app
+A microservices based API for a school management app, an LMS (Learning Management Systems)
 
 
 ### Assess Application Suitability. 
@@ -21,7 +21,9 @@ to create a school, a critical bug may happen, and the entire system will go dow
 to record attendance and puts marks.
 * **Limited vertical scalability** The more logic the monolith encapsulates, the more computer resources are needed,
 but there are certain limitations on CPUs and RAMs.
-* **Slower services in the monolith may cause delays for the rest of system**. Separating may reduce load on the
+* **Slower services in the monolith may cause delays for the rest of system**. For example, there might be a 
+statistic feature, that would provide monthly and yearly statistics about attendance, marks, homeworks. This service
+would be slower and may cause delays for the rest of the application. Separating may reduce load on the
 entire system, increasing system availability and reducing latency.
 * **Some security issues may cause unauthorised access to all components at once**
 
@@ -37,10 +39,12 @@ marking attendance, or passing quizzes may require more servers and thus can be 
 * **Technological freedom** Some services may require to be written in some specific technologies. For example the 
 chat service.
 
+Some similar LMS systems that employ microservices are: edX, canvas, Google Classroom.
+
 ## Define Service Boundaries
 
 There will be 3 main microservices:
-1. **User Service** - responsible for registering, authentication and authorization of users
+1. **User Service** - responsible for creating users, authentication and authorization of users
 2. **Schools Administration Service** - responsible for creating schools, new semesters, classes
 3. **Lessons Service** - responsible for creating courses and lessons, marking attendance and registering marks, 
 viewing the schedule
@@ -55,7 +59,7 @@ Network calls, data serialization, encoding are done with ease in Go with just t
 The final application represents a simple native compiled binary, which makes it very easy to deploy.
 Explicit error handling in Go ensures that services handle different failures in a right way.
 
-The API gateway will be written in [to be completed]
+The API gateway will be written in Elixir.
 
 The external client (front-end app e.g.) will communicate with the API Gateway
 through a RESTful API. The microservices will communicate through RPC calls between themselves and with the API Gateway.
