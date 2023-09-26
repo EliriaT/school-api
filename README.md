@@ -50,7 +50,9 @@ There will be 3 main microservices:
 viewing the schedule
 
 System architecture diagram: 
-[to be completed]
+
+![ArchitectureDiagramPAD](https://github.com/EliriaT/school-api/assets/67596753/d2e82d48-7f50-4986-8158-b4b9b7adbb8e)
+
 
 ## Choose Technology Stack and Communication Patterns
 
