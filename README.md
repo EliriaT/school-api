@@ -73,8 +73,7 @@ Each service will have each own SQL database PostgreSQL.
 
 ### **User Service**
 
-![User Service](https://github.com/EliriaT/school-api/assets/67596753/76cd9434-f624-410b-b97a-fd82f5f4c2d9)
-
+![User Service](https://github.com/EliriaT/school-api/assets/67596753/18a114f9-f38b-474f-b8f3-cfd8f82b4171)
 
 ### **Schools Administration Service**
 
