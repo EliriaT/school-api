@@ -69,7 +69,7 @@ The Gateway will serve as synchronous RPC Client, and thus the communication wil
 
 ## Design Data Management
 
-Each service will have each own SQL database PostgreSQL.
+Each service will have each its own PostgreSQL database.
 
 ### **User Service**
 
@@ -84,3 +84,324 @@ Each service will have each own SQL database PostgreSQL.
 ### **Lessons Service**
 
 ![LessonsService](https://github.com/EliriaT/school-api/assets/67596753/e44665b9-afac-4775-91ea-4b640b8c4d24)
+
+### **Endpoints**
+
+The list of endpoints provided to the client by the API Gateway:
+
+* **User Service**
+
+`– POST /users` - Creates a users. Authentication middleware is applied to the endpoint. Only some roles can
+create users. **Authorization header required**
+
+<details>
+           <summary>Request Body</summary>
+          
+```
+{
+    "email" : "irinatiora7@gmail.com",
+    "lastName" : "Tiora",
+    "firstName": "Irina",
+    "school_id":1,
+    "role_id":2,
+    "class_id":0
+}
+```
+
+</details>
+
+<details>
+           <summary>Response Body</summary>
+
+```
+{
+    "id": 2,
+    "email": "irinatiora7@gmail.com",
+    "lastName": "Tiora",
+    "firstName": "Irina",
+    "passwordChangedAt": "0001-01-01T00:00:00Z",
+    "createdAt": "2023-09-27T04:56:50.346801Z",
+    "school_id": 1,
+    "role_id": 2
+}
+```
+</details>
+
+`– POST /users/login` -  Login to the service. This endpoint returns the Access token.
+
+<details>
+           <summary>Request Body</summary>
+
+```
+{
+    "email":"irinaAdmin@gmail.com",
+    "password" :"1234567"
+}
+```
+
+</details>
+
+<details>
+           <summary>Response Body</summary>
+
+```
+{
+    "token" : "v4.local.5Y91o9Gpgi56F7T3HPZO9RWPsDfDUdnD_N9A2flYzFTqWFlNZRXJVciENq1giChiQZm1lvayZIKIkxJPnwcWd_qoZBra4n1FvdoeabLtKDTmzteM9D4GJ1JSGvKR2WwH2Oyx6YK1_2IIrUyQiT1-Q3akC-epFaengnm7d30-Lar9fwSbfAK3FtL-EZsYF_yKDY5-JH6Ljw6sL0j689OqBKgdU1J9zbheJhv88KSbC34mlXSVMeyYRK8wJt_dV2d2ebQ8i5_Qdm8OapQHzLG8UMnaNnMiwnCkP1lSqecT2PiEkGuDth41WrUou-YMVAljHT64YmvpPQe7CYEMPRl9Z0FD79sbKFLcVQXlVNo-zDnYQ56enr9QIDbZlkOfS_ef-Rcdv67x6E1uJeLk9Hff4GdlbDCLfAmXaw",
+}
+```
+</details>
+
+`– POST /users/accountrecovery/:email/:token` - Change a user’s password. 
+
+<details>
+           <summary>Request Body</summary>
+
+```
+{
+    "password": "7SnowWindowStudent7"
+}
+```
+
+</details>
+
+* **Schools Administration Service**
+
+`– POST /schools` - Creates a school. Admin only access. 
+
+<details>
+           <summary>Request Body</summary>
+
+```
+{
+    "name" :  "I.P.L.T. Mihai Viteazu"
+}
+```
+
+</details>
+
+<details>
+           <summary>Response Body</summary>
+
+```
+{
+    "id": 3,
+    "name": "I.P.L.T. Mihai Viteazu",
+    "createdAt": "2023-09-27T16:52:04.804778Z",
+    "updatedAt": "0001-01-01T00:00:00Z"
+}
+```
+</details>
+
+
+`– POST /class ` -  Creates a class. Director’s and manager’s school only access. 
+
+<details>
+           <summary>Request Body</summary>
+
+```
+{
+    "name" :  "Clasa 6",
+    "head_teacher": 2
+}
+```
+
+</details>
+
+<details>
+           <summary>Response Body</summary>
+
+```
+{
+    "id": 1,
+    "name": "Clasa 6",
+    "head_teacher": 2,
+    "school_id": 4,
+    "createdAt": "0001-01-01T00:00:00Z",
+    "updatedAt": "0001-01-01T00:00:00Z"
+}
+```
+</details>
+
+`– GET /class` -  Response is based on user’s role. If it is a director or school manager, all classes are returned,
+otherwise the user’s class. 
+
+<details>
+           <summary>Response Body</summary>
+
+```
+[
+    {
+        "id": 1,
+        "name": "Clasa 6",
+        "head_teacher": 3,
+        "school_id": 4,
+        "head_teacher_name": "Noroc Viorel",
+        "createdAt": "0001-01-01T00:00:00Z",
+        "updatedAt": "0001-01-01T00:00:00Z"
+    }
+]
+```
+</details>
+
+`– POST /semester` - Creates a semester. Access limited to director and manager
+
+<details>
+           <summary>Request Body</summary>
+
+```
+{
+    "name":"Semestru 1",
+    "start_date":"2022-09-11T00:00:00Z",
+    "end_date":"2023-01-10T00:00:00Z"
+}
+```
+
+</details>
+
+<details>
+           <summary>Response Body</summary>
+
+```
+{
+    "id": 1,
+    "name": "Semestru 1",
+    "start_date": "2022-09-11T00:00:00Z",
+    "end_date": "2023-01-10T00:00:00Z",
+    "school_id": 1,
+    "createdAt": "2023-09-27T16:58:24.392629Z",
+    "updatedAt": "0001-01-01T00:00:00Z"
+}
+```
+</details>
+
+* **Lessons Service**
+
+`– POST /course` - Creates a course. Access limited to director and manager
+
+<details>
+           <summary>Request Body</summary>
+
+```
+{
+    "name":"Matematica",
+    "teacher_id":3,
+    "semester_id":1,
+    "class_id":1
+}
+```
+
+</details>
+
+<details>
+           <summary>Response Body</summary>
+
+```
+{
+    "id": 2,
+    "name": "Matematica",
+    "teacher_id": 3,
+    "semester_id": 1,
+    "class_id": 1,
+    "createdAt": "2023-09-27T17:04:49.9149Z",
+    "updatedAt": "0001-01-01T00:00:00Z"
+}
+```
+</details>
+
+`– GET /course/:id` - Get students list together with their marks. A student will receive in the response only their
+marks, a teacher will see all marks to their taught subject.
+
+<details>
+           <summary>Response Body</summary>
+
+```
+{
+    "id": 2,
+    "course_name": "Matematica",
+    "teacher_id": 3,
+    "semester_id": 1,
+    "class_id": 1,
+    "dates": ["2023-09-27T17:04:49.9149Z"],
+    "marks": [
+        "mark_id" : 2,
+        "course_id": 3,
+        "mark_date": "2023-09-27T17:04:49.9149Z",
+        "is_absent": false,
+        "mark": 7,
+        "student_id": 3,
+        "createdAt":  "2023-09-27T17:04:49.9149Z",
+        "updatedAt": null
+    ]
+}
+```
+</details>
+
+`– POST /lesson` -  Creates a lesson for a course. Access limited to director and manager
+
+<details>
+           <summary>Request Body</summary>
+
+```
+{
+    "name":"Matematica",
+    "course_id":2,
+    "start_hour":"9:00",
+    "end_hour":"9:45",
+    "week_day":"Tuesday",
+    "classroom":"35"
+}
+```
+
+</details>
+
+<details>
+           <summary>Response Body</summary>
+
+```
+{
+    "id":3,
+    "name":"Matematica",
+    "course_id":2,
+    "start_hour":"9:00",
+    "end_hour":"9:45",
+    "week_day":"Tuesday",
+    "classroom":"35"
+}
+```
+</details>
+
+`– POST /mark` - Creates a mark or absence .
+
+<details>
+           <summary>Request Body</summary>
+
+```
+{
+    "course_id":12,
+    "mark_date":"2022-10-26T00:00:00Z",
+    "is_absent":true,
+    "mark":0,
+    "student_id":7
+}
+```
+
+</details>
+
+<details>
+           <summary>Response Body</summary>
+
+```
+{
+    "id":1,
+    "course_id":12,
+    "mark_date":"2022-10-26T00:00:00Z",
+    "is_absent":true,
+    "mark":0,
+    "student_id":7
+}
+```
+</details>
+
+## Deployment and Scaling:
+Microservices can be deployed using Docker container. When it comes to containers orchestration, load balancing, 
+Kubernetes cluster will be used for this.
