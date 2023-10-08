@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "./pkg/pb";
+
+service SchoolService {
+  rpc CreateSchool(SchoolRequest) returns (SchoolResponse) {}
+  rpc CreateClass(ClassRequest) returns (ClassResponse) {}
+  rpc GetClass(ID) returns (ClassResponse) {}
+}
+
+message SchoolRequest {
+  string name = 1;
+}
+
+message SchoolResponse {
+  int64 id = 1;
+  string name = 2;
+}
+
+message ClassRequest {
+  string name = 1;
+  int64 headTeacher = 2;
+  int64 schoolId = 3;
+
+}
+
+message ClassResponse {
+  int64 id = 1;
+  string name = 2;
+  int64 headTeacher = 3;
+  int64 schoolId = 4;
+}
+
+message ID { int64 id = 1; }

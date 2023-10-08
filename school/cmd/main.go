@@ -1,21 +1,38 @@
 package main
 
 import (
-	"github.com/EliriaT/school-api/school/internal/controller/school"
-	httphandler "github.com/EliriaT/school-api/school/internal/handler/http"
-	"github.com/EliriaT/school-api/school/internal/repository/memory"
+	"github.com/EliriaT/school-api/school/internal/db"
+	"github.com/EliriaT/school-api/school/internal/services/auth"
+	config "github.com/EliriaT/school-api/school/pkg/config"
+	"github.com/EliriaT/school-api/school/pkg/pb"
+	"google.golang.org/grpc"
 	"log"
-	"net/http"
+	"net"
 )
 
 func main() {
-	log.Println("Starting the movie metadata service")
+	config, err := config.LoadConfig()
+	if err != nil {
+		log.Fatalf("Could not log config", err)
+	}
+	handler := db.Init(config.DBUrl)
+	jwt := auth.JwtWrapper{
+		SecretKey:       config.SecretKey,
+		Issuer:          "school-aoi",
+		ExpirationHours: 24 * 365,
+	}
 
-	repo := memory.New()
-	ctrl := school.New(repo)
-	h := httphandler.New(ctrl)
-	http.Handle("/school", http.HandlerFunc(h.GetSchool))
-	if err := http.ListenAndServe(":8081", nil); err != nil {
-		panic(err)
+	listener, err := net.Listen("tcp", config.Port)
+
+	log.Println("School service started")
+
+	server := auth.Server{H: handler, Jwt: jwt}
+
+	grpcServer := grpc.NewServer()
+
+	pb.RegisterAuthServiceServer(grpcServer, &server)
+
+	if err := grpcServer.Serve(listener); err != nil {
+		log.Fatalln("Failed to accept conn:", err)
 	}
 }
