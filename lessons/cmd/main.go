@@ -1,20 +1,33 @@
 package main
 
 import (
-	"github.com/EliriaT/school-api/lessons/internal/controller/course"
-	httphandler "github.com/EliriaT/school-api/lessons/internal/handler/http"
-	"github.com/EliriaT/school-api/lessons/internal/repository/memory"
+	"github.com/EliriaT/school-api/lessons/internal/db"
+	"github.com/EliriaT/school-api/lessons/internal/services"
+	config "github.com/EliriaT/school-api/lessons/pkg/config"
+	"github.com/EliriaT/school-api/lessons/pkg/pb"
+	"google.golang.org/grpc"
 	"log"
-	"net/http"
+	"net"
 )
 
 func main() {
-	log.Println("Starting the rating service")
-	repo := memory.New()
-	ctrl := course.New(repo)
-	h := httphandler.New(ctrl)
-	http.Handle("/course", http.HandlerFunc(h.Handle))
-	if err := http.ListenAndServe(":8082", nil); err != nil {
-		panic(err)
+	config, err := config.LoadConfig()
+	if err != nil {
+		log.Fatalf("Could not log config", err)
+	}
+	handler := db.Init(config.DBUrl)
+
+	listener, err := net.Listen("tcp", config.Port)
+
+	log.Println("Lessons service started")
+
+	courseServer := services.CourseServer{Handler: handler}
+
+	grpcServer := grpc.NewServer()
+
+	pb.RegisterCourseServiceServer(grpcServer, &courseServer)
+
+	if err := grpcServer.Serve(listener); err != nil {
+		log.Fatalln("Failed to accept conn:", err)
 	}
 }
