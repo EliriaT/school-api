@@ -6,6 +6,7 @@ type Config struct {
 	Port      string `mapstructure:"PORT"`
 	DBUrl     string `mapstructure:"DB_URL"`
 	SecretKey string `mapstructure:"TOKEN_SECRET_KEY"`
+	SchoolUrl string `mapstructure:"SCHOOL_URL"`
 }
 
 func LoadConfig() (config Config, err error) {
