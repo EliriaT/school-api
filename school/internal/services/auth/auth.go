@@ -13,6 +13,29 @@ type AuthServer struct {
 	Jwt     JwtWrapper
 }
 
+func (s *AuthServer) GetUser(ctx context.Context, req *pb.EntityID) (*pb.UserResponse, error) {
+	var user models.User
+	if result := s.Handler.DB.First(&user, req.Id); result.Error != nil {
+		return &pb.UserResponse{
+			Status: http.StatusNotFound,
+			Error:  result.Error.Error(),
+		}, nil
+	}
+
+	data := &pb.User{
+		Id:       user.ID,
+		Email:    user.Email,
+		Name:     user.Name,
+		SchoolId: user.SchoolId,
+		RoleId:   user.RoleId,
+	}
+
+	return &pb.UserResponse{
+		Status: http.StatusOK,
+		Data:   data,
+	}, nil
+}
+
 func (s *AuthServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	var user models.User
 

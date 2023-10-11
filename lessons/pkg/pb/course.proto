@@ -1,14 +1,14 @@
 syntax = "proto3";
 
-package auth;
+package course;
 
 option go_package = "./pkg/pb";
 
 service CourseService {
-  rpc CreateCourse(CourseRequest) returns (CreateResponse) {}
-  rpc GetCourse(ID) returns (CourseResponse) {}
-  rpc CreateLesson(LessonRequest) returns (CreateResponse) {}
-  rpc CreateMark(MarkRequest) returns (CreateResponse){}
+  rpc CreateCourse(CourseRequest) returns (CourseCreateResponse) {}
+  rpc GetCourse(CourseID) returns (CourseResponse) {}
+  rpc CreateLesson(LessonRequest) returns (CourseCreateResponse) {}
+  rpc CreateMark(MarkRequest) returns (CourseCreateResponse){}
 }
 
 message CourseRequest {
@@ -34,7 +34,7 @@ message MarkRequest{
   int64 studentId = 5;
 }
 
-message CreateResponse {
+message CourseCreateResponse {
   int64 status = 1;
   string error = 2;
 }
@@ -62,4 +62,4 @@ message CourseResponse {
   Course data = 3;
 }
 
-message ID { int64 id = 1; }
+message CourseID { int64 id = 1; }

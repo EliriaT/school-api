@@ -22,10 +22,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CourseServiceClient interface {
-	CreateCourse(ctx context.Context, in *CourseRequest, opts ...grpc.CallOption) (*CreateResponse, error)
-	GetCourse(ctx context.Context, in *ID, opts ...grpc.CallOption) (*CourseResponse, error)
-	CreateLesson(ctx context.Context, in *LessonRequest, opts ...grpc.CallOption) (*CreateResponse, error)
-	CreateMark(ctx context.Context, in *MarkRequest, opts ...grpc.CallOption) (*CreateResponse, error)
+	CreateCourse(ctx context.Context, in *CourseRequest, opts ...grpc.CallOption) (*CourseCreateResponse, error)
+	GetCourse(ctx context.Context, in *CourseID, opts ...grpc.CallOption) (*CourseResponse, error)
+	CreateLesson(ctx context.Context, in *LessonRequest, opts ...grpc.CallOption) (*CourseCreateResponse, error)
+	CreateMark(ctx context.Context, in *MarkRequest, opts ...grpc.CallOption) (*CourseCreateResponse, error)
 }
 
 type courseServiceClient struct {
@@ -36,36 +36,36 @@ func NewCourseServiceClient(cc grpc.ClientConnInterface) CourseServiceClient {
 	return &courseServiceClient{cc}
 }
 
-func (c *courseServiceClient) CreateCourse(ctx context.Context, in *CourseRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
-	out := new(CreateResponse)
-	err := c.cc.Invoke(ctx, "/auth.CourseService/CreateCourse", in, out, opts...)
+func (c *courseServiceClient) CreateCourse(ctx context.Context, in *CourseRequest, opts ...grpc.CallOption) (*CourseCreateResponse, error) {
+	out := new(CourseCreateResponse)
+	err := c.cc.Invoke(ctx, "/course.CourseService/CreateCourse", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *courseServiceClient) GetCourse(ctx context.Context, in *ID, opts ...grpc.CallOption) (*CourseResponse, error) {
+func (c *courseServiceClient) GetCourse(ctx context.Context, in *CourseID, opts ...grpc.CallOption) (*CourseResponse, error) {
 	out := new(CourseResponse)
-	err := c.cc.Invoke(ctx, "/auth.CourseService/GetCourse", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/course.CourseService/GetCourse", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *courseServiceClient) CreateLesson(ctx context.Context, in *LessonRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
-	out := new(CreateResponse)
-	err := c.cc.Invoke(ctx, "/auth.CourseService/CreateLesson", in, out, opts...)
+func (c *courseServiceClient) CreateLesson(ctx context.Context, in *LessonRequest, opts ...grpc.CallOption) (*CourseCreateResponse, error) {
+	out := new(CourseCreateResponse)
+	err := c.cc.Invoke(ctx, "/course.CourseService/CreateLesson", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *courseServiceClient) CreateMark(ctx context.Context, in *MarkRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
-	out := new(CreateResponse)
-	err := c.cc.Invoke(ctx, "/auth.CourseService/CreateMark", in, out, opts...)
+func (c *courseServiceClient) CreateMark(ctx context.Context, in *MarkRequest, opts ...grpc.CallOption) (*CourseCreateResponse, error) {
+	out := new(CourseCreateResponse)
+	err := c.cc.Invoke(ctx, "/course.CourseService/CreateMark", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,26 +76,26 @@ func (c *courseServiceClient) CreateMark(ctx context.Context, in *MarkRequest, o
 // All implementations should embed UnimplementedCourseServiceServer
 // for forward compatibility
 type CourseServiceServer interface {
-	CreateCourse(context.Context, *CourseRequest) (*CreateResponse, error)
-	GetCourse(context.Context, *ID) (*CourseResponse, error)
-	CreateLesson(context.Context, *LessonRequest) (*CreateResponse, error)
-	CreateMark(context.Context, *MarkRequest) (*CreateResponse, error)
+	CreateCourse(context.Context, *CourseRequest) (*CourseCreateResponse, error)
+	GetCourse(context.Context, *CourseID) (*CourseResponse, error)
+	CreateLesson(context.Context, *LessonRequest) (*CourseCreateResponse, error)
+	CreateMark(context.Context, *MarkRequest) (*CourseCreateResponse, error)
 }
 
 // UnimplementedCourseServiceServer should be embedded to have forward compatible implementations.
 type UnimplementedCourseServiceServer struct {
 }
 
-func (UnimplementedCourseServiceServer) CreateCourse(context.Context, *CourseRequest) (*CreateResponse, error) {
+func (UnimplementedCourseServiceServer) CreateCourse(context.Context, *CourseRequest) (*CourseCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateCourse not implemented")
 }
-func (UnimplementedCourseServiceServer) GetCourse(context.Context, *ID) (*CourseResponse, error) {
+func (UnimplementedCourseServiceServer) GetCourse(context.Context, *CourseID) (*CourseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCourse not implemented")
 }
-func (UnimplementedCourseServiceServer) CreateLesson(context.Context, *LessonRequest) (*CreateResponse, error) {
+func (UnimplementedCourseServiceServer) CreateLesson(context.Context, *LessonRequest) (*CourseCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateLesson not implemented")
 }
-func (UnimplementedCourseServiceServer) CreateMark(context.Context, *MarkRequest) (*CreateResponse, error) {
+func (UnimplementedCourseServiceServer) CreateMark(context.Context, *MarkRequest) (*CourseCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMark not implemented")
 }
 
@@ -120,7 +120,7 @@ func _CourseService_CreateCourse_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/auth.CourseService/CreateCourse",
+		FullMethod: "/course.CourseService/CreateCourse",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CourseServiceServer).CreateCourse(ctx, req.(*CourseRequest))
@@ -129,7 +129,7 @@ func _CourseService_CreateCourse_Handler(srv interface{}, ctx context.Context, d
 }
 
 func _CourseService_GetCourse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ID)
+	in := new(CourseID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -138,10 +138,10 @@ func _CourseService_GetCourse_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/auth.CourseService/GetCourse",
+		FullMethod: "/course.CourseService/GetCourse",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CourseServiceServer).GetCourse(ctx, req.(*ID))
+		return srv.(CourseServiceServer).GetCourse(ctx, req.(*CourseID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -156,7 +156,7 @@ func _CourseService_CreateLesson_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/auth.CourseService/CreateLesson",
+		FullMethod: "/course.CourseService/CreateLesson",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CourseServiceServer).CreateLesson(ctx, req.(*LessonRequest))
@@ -174,7 +174,7 @@ func _CourseService_CreateMark_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/auth.CourseService/CreateMark",
+		FullMethod: "/course.CourseService/CreateMark",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(CourseServiceServer).CreateMark(ctx, req.(*MarkRequest))
@@ -186,7 +186,7 @@ func _CourseService_CreateMark_Handler(srv interface{}, ctx context.Context, dec
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var CourseService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "auth.CourseService",
+	ServiceName: "course.CourseService",
 	HandlerType: (*CourseServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

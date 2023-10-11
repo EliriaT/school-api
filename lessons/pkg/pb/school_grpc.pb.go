@@ -22,10 +22,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SchoolServiceClient interface {
-	CreateSchool(ctx context.Context, in *SchoolRequest, opts ...grpc.CallOption) (*CreateResponse, error)
-	CreateClass(ctx context.Context, in *ClassRequest, opts ...grpc.CallOption) (*CreateResponse, error)
-	GetClass(ctx context.Context, in *ID, opts ...grpc.CallOption) (*ClassResponse, error)
-	CreateStudent(ctx context.Context, in *StudentRequest, opts ...grpc.CallOption) (*CreateResponse, error)
+	CreateSchool(ctx context.Context, in *SchoolRequest, opts ...grpc.CallOption) (*SchoolCreateResponse, error)
+	CreateClass(ctx context.Context, in *ClassRequest, opts ...grpc.CallOption) (*SchoolCreateResponse, error)
+	GetClass(ctx context.Context, in *ClassID, opts ...grpc.CallOption) (*ClassResponse, error)
+	CreateStudent(ctx context.Context, in *StudentRequest, opts ...grpc.CallOption) (*SchoolCreateResponse, error)
 }
 
 type schoolServiceClient struct {
@@ -36,8 +36,8 @@ func NewSchoolServiceClient(cc grpc.ClientConnInterface) SchoolServiceClient {
 	return &schoolServiceClient{cc}
 }
 
-func (c *schoolServiceClient) CreateSchool(ctx context.Context, in *SchoolRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
-	out := new(CreateResponse)
+func (c *schoolServiceClient) CreateSchool(ctx context.Context, in *SchoolRequest, opts ...grpc.CallOption) (*SchoolCreateResponse, error) {
+	out := new(SchoolCreateResponse)
 	err := c.cc.Invoke(ctx, "/school.SchoolService/CreateSchool", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -45,8 +45,8 @@ func (c *schoolServiceClient) CreateSchool(ctx context.Context, in *SchoolReques
 	return out, nil
 }
 
-func (c *schoolServiceClient) CreateClass(ctx context.Context, in *ClassRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
-	out := new(CreateResponse)
+func (c *schoolServiceClient) CreateClass(ctx context.Context, in *ClassRequest, opts ...grpc.CallOption) (*SchoolCreateResponse, error) {
+	out := new(SchoolCreateResponse)
 	err := c.cc.Invoke(ctx, "/school.SchoolService/CreateClass", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (c *schoolServiceClient) CreateClass(ctx context.Context, in *ClassRequest,
 	return out, nil
 }
 
-func (c *schoolServiceClient) GetClass(ctx context.Context, in *ID, opts ...grpc.CallOption) (*ClassResponse, error) {
+func (c *schoolServiceClient) GetClass(ctx context.Context, in *ClassID, opts ...grpc.CallOption) (*ClassResponse, error) {
 	out := new(ClassResponse)
 	err := c.cc.Invoke(ctx, "/school.SchoolService/GetClass", in, out, opts...)
 	if err != nil {
@@ -63,8 +63,8 @@ func (c *schoolServiceClient) GetClass(ctx context.Context, in *ID, opts ...grpc
 	return out, nil
 }
 
-func (c *schoolServiceClient) CreateStudent(ctx context.Context, in *StudentRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
-	out := new(CreateResponse)
+func (c *schoolServiceClient) CreateStudent(ctx context.Context, in *StudentRequest, opts ...grpc.CallOption) (*SchoolCreateResponse, error) {
+	out := new(SchoolCreateResponse)
 	err := c.cc.Invoke(ctx, "/school.SchoolService/CreateStudent", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -76,26 +76,26 @@ func (c *schoolServiceClient) CreateStudent(ctx context.Context, in *StudentRequ
 // All implementations should embed UnimplementedSchoolServiceServer
 // for forward compatibility
 type SchoolServiceServer interface {
-	CreateSchool(context.Context, *SchoolRequest) (*CreateResponse, error)
-	CreateClass(context.Context, *ClassRequest) (*CreateResponse, error)
-	GetClass(context.Context, *ID) (*ClassResponse, error)
-	CreateStudent(context.Context, *StudentRequest) (*CreateResponse, error)
+	CreateSchool(context.Context, *SchoolRequest) (*SchoolCreateResponse, error)
+	CreateClass(context.Context, *ClassRequest) (*SchoolCreateResponse, error)
+	GetClass(context.Context, *ClassID) (*ClassResponse, error)
+	CreateStudent(context.Context, *StudentRequest) (*SchoolCreateResponse, error)
 }
 
 // UnimplementedSchoolServiceServer should be embedded to have forward compatible implementations.
 type UnimplementedSchoolServiceServer struct {
 }
 
-func (UnimplementedSchoolServiceServer) CreateSchool(context.Context, *SchoolRequest) (*CreateResponse, error) {
+func (UnimplementedSchoolServiceServer) CreateSchool(context.Context, *SchoolRequest) (*SchoolCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateSchool not implemented")
 }
-func (UnimplementedSchoolServiceServer) CreateClass(context.Context, *ClassRequest) (*CreateResponse, error) {
+func (UnimplementedSchoolServiceServer) CreateClass(context.Context, *ClassRequest) (*SchoolCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateClass not implemented")
 }
-func (UnimplementedSchoolServiceServer) GetClass(context.Context, *ID) (*ClassResponse, error) {
+func (UnimplementedSchoolServiceServer) GetClass(context.Context, *ClassID) (*ClassResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetClass not implemented")
 }
-func (UnimplementedSchoolServiceServer) CreateStudent(context.Context, *StudentRequest) (*CreateResponse, error) {
+func (UnimplementedSchoolServiceServer) CreateStudent(context.Context, *StudentRequest) (*SchoolCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateStudent not implemented")
 }
 
@@ -147,7 +147,7 @@ func _SchoolService_CreateClass_Handler(srv interface{}, ctx context.Context, de
 }
 
 func _SchoolService_GetClass_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ID)
+	in := new(ClassID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -159,7 +159,7 @@ func _SchoolService_GetClass_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/school.SchoolService/GetClass",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SchoolServiceServer).GetClass(ctx, req.(*ID))
+		return srv.(SchoolServiceServer).GetClass(ctx, req.(*ClassID))
 	}
 	return interceptor(ctx, in, info, handler)
 }

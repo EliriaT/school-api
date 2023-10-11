@@ -5,13 +5,13 @@ package auth;
 option go_package = "./pkg/pb";
 
 service AuthService {
-  rpc GetUser(EntityID) returns (UserResponse){}
+  rpc GetUser(UserID) returns (UserResponse){}
   rpc Register(RegisterRequest) returns (RegisterResponse) {}
   rpc Login(LoginRequest) returns (LoginResponse) {}
   rpc Validate(ValidateRequest) returns (ValidateResponse) {}
 }
 
-message EntityID { int64 id = 1; }
+message UserID { int64 id = 1; }
 
 message UserResponse {
   int64 status = 1;

@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
-	GetUser(ctx context.Context, in *EntityID, opts ...grpc.CallOption) (*UserResponse, error)
+	GetUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*UserResponse, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*ValidateResponse, error)
@@ -36,7 +36,7 @@ func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
 	return &authServiceClient{cc}
 }
 
-func (c *authServiceClient) GetUser(ctx context.Context, in *EntityID, opts ...grpc.CallOption) (*UserResponse, error) {
+func (c *authServiceClient) GetUser(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*UserResponse, error) {
 	out := new(UserResponse)
 	err := c.cc.Invoke(ctx, "/auth.AuthService/GetUser", in, out, opts...)
 	if err != nil {
@@ -76,7 +76,7 @@ func (c *authServiceClient) Validate(ctx context.Context, in *ValidateRequest, o
 // All implementations should embed UnimplementedAuthServiceServer
 // for forward compatibility
 type AuthServiceServer interface {
-	GetUser(context.Context, *EntityID) (*UserResponse, error)
+	GetUser(context.Context, *UserID) (*UserResponse, error)
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	Validate(context.Context, *ValidateRequest) (*ValidateResponse, error)
@@ -86,7 +86,7 @@ type AuthServiceServer interface {
 type UnimplementedAuthServiceServer struct {
 }
 
-func (UnimplementedAuthServiceServer) GetUser(context.Context, *EntityID) (*UserResponse, error) {
+func (UnimplementedAuthServiceServer) GetUser(context.Context, *UserID) (*UserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
 }
 func (UnimplementedAuthServiceServer) Register(context.Context, *RegisterRequest) (*RegisterResponse, error) {
@@ -111,7 +111,7 @@ func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
 }
 
 func _AuthService_GetUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EntityID)
+	in := new(UserID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func _AuthService_GetUser_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: "/auth.AuthService/GetUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).GetUser(ctx, req.(*EntityID))
+		return srv.(AuthServiceServer).GetUser(ctx, req.(*UserID))
 	}
 	return interceptor(ctx, in, info, handler)
 }

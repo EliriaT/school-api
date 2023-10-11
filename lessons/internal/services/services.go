@@ -3,33 +3,61 @@ package services
 import (
 	"context"
 	"github.com/EliriaT/school-api/lessons/internal/db"
+	"github.com/EliriaT/school-api/lessons/pkg/client"
 	"github.com/EliriaT/school-api/lessons/pkg/models"
 	"github.com/EliriaT/school-api/lessons/pkg/pb"
 	"net/http"
 )
 
 type CourseServer struct {
-	Handler db.Handler
+	Handler      db.Handler
+	SchoolClient client.SchoolServiceClient
+	AuthClient   client.AuthServiceClient
 }
 
-func (c *CourseServer) CreateCourse(ctx context.Context, request *pb.CourseRequest) (*pb.CreateResponse, error) {
+func (c *CourseServer) CreateCourse(ctx context.Context, request *pb.CourseRequest) (*pb.CourseCreateResponse, error) {
 	var course models.Course
 
 	//TODO check class and teacher id with the second microservice
+	//TODO should check role of user
+	class, err := c.SchoolClient.GetClass(request.ClassId)
+	if err != nil {
+		return &pb.CourseCreateResponse{
+			Status: http.StatusNotFound,
+			Error:  err.Error()}, nil
+	}
+	if class.Status != http.StatusOK {
+		return &pb.CourseCreateResponse{
+			Status: http.StatusNotFound,
+			Error:  "Class not found"}, nil
+	}
+
+	user, err := c.AuthClient.GetUser(request.TeacherId)
+	if err != nil {
+		return &pb.CourseCreateResponse{
+			Status: http.StatusNotFound,
+			Error:  err.Error()}, nil
+	}
+	if user.Status != http.StatusOK {
+		return &pb.CourseCreateResponse{
+			Status: http.StatusNotFound,
+			Error:  "User not found"}, nil
+	}
+
 	course.Name = request.Name
 	course.ClassID = request.ClassId
 	course.TeacherID = request.TeacherId
 
 	result := c.Handler.DB.Create(&course)
 	if result.Error != nil {
-		return &pb.CreateResponse{
+		return &pb.CourseCreateResponse{
 			Status: http.StatusInternalServerError,
 			Error:  result.Error.Error()}, nil
 	}
-	return &pb.CreateResponse{Status: http.StatusCreated}, nil
+	return &pb.CourseCreateResponse{Status: http.StatusCreated}, nil
 }
 
-func (c *CourseServer) GetCourse(ctx context.Context, req *pb.ID) (*pb.CourseResponse, error) {
+func (c *CourseServer) GetCourse(ctx context.Context, req *pb.CourseID) (*pb.CourseResponse, error) {
 	var course models.Course
 	if result := c.Handler.DB.Preload("Marks").First(&course, req.Id); result.Error != nil {
 		return &pb.CourseResponse{
@@ -62,12 +90,12 @@ func (c *CourseServer) GetCourse(ctx context.Context, req *pb.ID) (*pb.CourseRes
 	}, nil
 }
 
-func (c *CourseServer) CreateLesson(ctx context.Context, request *pb.LessonRequest) (*pb.CreateResponse, error) {
+func (c *CourseServer) CreateLesson(ctx context.Context, request *pb.LessonRequest) (*pb.CourseCreateResponse, error) {
 	var lesson models.Lesson
 
 	var course models.Course
 	if result := c.Handler.DB.First(&course, request.CourseId); result.Error != nil {
-		return &pb.CreateResponse{
+		return &pb.CourseCreateResponse{
 			Status: http.StatusNotFound,
 			Error:  result.Error.Error(),
 		}, nil
@@ -82,21 +110,33 @@ func (c *CourseServer) CreateLesson(ctx context.Context, request *pb.LessonReque
 
 	result := c.Handler.DB.Create(&lesson)
 	if result.Error != nil {
-		return &pb.CreateResponse{
+		return &pb.CourseCreateResponse{
 			Status: http.StatusInternalServerError,
 			Error:  result.Error.Error()}, nil
 	}
-	return &pb.CreateResponse{Status: http.StatusCreated}, nil
+	return &pb.CourseCreateResponse{Status: http.StatusCreated}, nil
 }
 
-func (c *CourseServer) CreateMark(ctx context.Context, request *pb.MarkRequest) (*pb.CreateResponse, error) {
+func (c *CourseServer) CreateMark(ctx context.Context, request *pb.MarkRequest) (*pb.CourseCreateResponse, error) {
 	var mark models.Mark
 
 	//TODO check existence of student ID
+	//TODO should check role of user
+	user, err := c.AuthClient.GetUser(request.StudentId)
+	if err != nil {
+		return &pb.CourseCreateResponse{
+			Status: http.StatusNotFound,
+			Error:  err.Error()}, nil
+	}
+	if user.Status != http.StatusOK {
+		return &pb.CourseCreateResponse{
+			Status: http.StatusNotFound,
+			Error:  "User not found"}, nil
+	}
 
 	var course models.Course
 	if result := c.Handler.DB.First(&course, request.CourseId); result.Error != nil {
-		return &pb.CreateResponse{
+		return &pb.CourseCreateResponse{
 			Status: http.StatusNotFound,
 			Error:  result.Error.Error(),
 		}, nil
@@ -110,9 +150,9 @@ func (c *CourseServer) CreateMark(ctx context.Context, request *pb.MarkRequest) 
 
 	result := c.Handler.DB.Create(&mark)
 	if result.Error != nil {
-		return &pb.CreateResponse{
+		return &pb.CourseCreateResponse{
 			Status: http.StatusInternalServerError,
 			Error:  result.Error.Error()}, nil
 	}
-	return &pb.CreateResponse{Status: http.StatusCreated}, nil
+	return &pb.CourseCreateResponse{Status: http.StatusCreated}, nil
 }
