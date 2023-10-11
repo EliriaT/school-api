@@ -21,7 +21,7 @@ func (s *SchoolServer) CreateSchool(ctx context.Context, req *pb.SchoolRequest) 
 	if result.Error != nil {
 		return &pb.CreateResponse{
 			Status: http.StatusInternalServerError,
-			Error:  result.Error.Error()}, result.Error
+			Error:  result.Error.Error()}, nil
 	}
 	return &pb.CreateResponse{Status: http.StatusCreated}, nil
 }
