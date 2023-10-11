@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/EliriaT/school-api/school/internal/db"
 	"github.com/EliriaT/school-api/school/internal/services/auth"
+	"github.com/EliriaT/school-api/school/internal/services/school"
 	config "github.com/EliriaT/school-api/school/pkg/config"
 	"github.com/EliriaT/school-api/school/pkg/pb"
 	"google.golang.org/grpc"
@@ -26,11 +27,13 @@ func main() {
 
 	log.Println("School service started")
 
-	server := auth.Server{H: handler, Jwt: jwt}
+	authServer := auth.AuthServer{Handler: handler, Jwt: jwt}
+	schoolServer := school.SchoolServer{Handler: handler}
 
 	grpcServer := grpc.NewServer()
 
-	pb.RegisterAuthServiceServer(grpcServer, &server)
+	pb.RegisterAuthServiceServer(grpcServer, &authServer)
+	pb.RegisterSchoolServiceServer(grpcServer, &schoolServer)
 
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalln("Failed to accept conn:", err)

@@ -15,8 +15,7 @@ message RegisterRequest {
   string password = 2;
   string name = 3 ;
   int64 schoolId = 4;
-  int64 classId = 5;
-  int64 roleId = 6;
+  int64 roleId = 5;
 }
 
 message RegisterResponse {

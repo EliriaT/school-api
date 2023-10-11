@@ -21,6 +21,7 @@ func Init(url string) Handler {
 	db.AutoMigrate(&models.User{})
 	db.AutoMigrate(&models.School{})
 	db.AutoMigrate(&models.Class{})
+	db.AutoMigrate(&models.Student{})
 
 	return Handler{db}
 }

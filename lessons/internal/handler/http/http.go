@@ -14,7 +14,7 @@ type Handler struct {
 	ctrl *course.Controller
 }
 
-// New creates a new rating service HTTP handler.
+// New creates a new rating service HTTP api.
 func New(ctrl *course.Controller) *Handler {
 	return &Handler{ctrl}
 }

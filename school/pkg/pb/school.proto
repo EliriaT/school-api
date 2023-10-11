@@ -5,32 +5,43 @@ package auth;
 option go_package = "./pkg/pb";
 
 service SchoolService {
-  rpc CreateSchool(SchoolRequest) returns (SchoolResponse) {}
-  rpc CreateClass(ClassRequest) returns (ClassResponse) {}
+  rpc CreateSchool(SchoolRequest) returns (CreateResponse) {}
+  rpc CreateClass(ClassRequest) returns (CreateResponse) {}
   rpc GetClass(ID) returns (ClassResponse) {}
+  rpc CreateStudent(StudentRequest) returns (CreateResponse){}
 }
 
 message SchoolRequest {
   string name = 1;
 }
 
-message SchoolResponse {
-  int64 id = 1;
-  string name = 2;
+message CreateResponse {
+  int64 status = 1;
+  string error = 2;
 }
 
 message ClassRequest {
   string name = 1;
   int64 headTeacher = 2;
   int64 schoolId = 3;
-
 }
 
-message ClassResponse {
+message Class{
   int64 id = 1;
   string name = 2;
   int64 headTeacher = 3;
   int64 schoolId = 4;
+}
+
+message ClassResponse {
+  int64 status = 1;
+  string error = 2;
+  Class data = 3;
+}
+
+message StudentRequest{
+  int64 userID = 1;
+  int64 classID = 2;
 }
 
 message ID { int64 id = 1; }

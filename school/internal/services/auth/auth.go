@@ -8,18 +8,26 @@ import (
 	"net/http"
 )
 
-type Server struct {
-	H   db.Handler
-	Jwt JwtWrapper
+type AuthServer struct {
+	Handler db.Handler
+	Jwt     JwtWrapper
 }
 
-func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+func (s *AuthServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	var user models.User
 
-	if result := s.H.DB.Where(&models.User{Email: req.Email}).First(&user); result.Error == nil {
+	if result := s.Handler.DB.Where(&models.User{Email: req.Email}).First(&user); result.Error == nil {
 		return &pb.RegisterResponse{
 			Status: http.StatusBadRequest,
 			Error:  "Email already exists",
+		}, nil
+	}
+
+	var school models.School
+	if result := s.Handler.DB.First(&school, req.SchoolId); result.Error != nil {
+		return &pb.RegisterResponse{
+			Status: http.StatusNotFound,
+			Error:  "No such school",
 		}, nil
 	}
 
@@ -31,18 +39,25 @@ func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Reg
 		}, nil
 	}
 	user.Password = password
+	user.Name = req.Name
+	user.SchoolId = req.SchoolId
+	user.RoleId = req.RoleId
 
-	s.H.DB.Create(&user)
+	if result := s.Handler.DB.Create(&user); result.Error != nil {
+		return &pb.RegisterResponse{
+			Status: http.StatusInternalServerError,
+			Error:  result.Error.Error()}, nil
+	}
 
 	return &pb.RegisterResponse{
 		Status: http.StatusCreated,
 	}, nil
 }
 
-func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
+func (s *AuthServer) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	var user models.User
 
-	if result := s.H.DB.Where(&models.User{Email: req.Email}).First(&user); result.Error != nil {
+	if result := s.Handler.DB.Where(&models.User{Email: req.Email}).First(&user); result.Error != nil {
 		return &pb.LoginResponse{
 			Status: http.StatusNotFound,
 			Error:  "User not found",
@@ -66,7 +81,7 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 	}, nil
 }
 
-func (s *Server) Validate(ctx context.Context, req *pb.ValidateRequest) (*pb.ValidateResponse, error) {
+func (s *AuthServer) Validate(ctx context.Context, req *pb.ValidateRequest) (*pb.ValidateResponse, error) {
 	claims, err := s.Jwt.ValidateToken(req.Token)
 
 	if err != nil {
@@ -78,7 +93,7 @@ func (s *Server) Validate(ctx context.Context, req *pb.ValidateRequest) (*pb.Val
 
 	var user models.User
 
-	if result := s.H.DB.Where(&models.User{Email: claims.Email}).First(&user); result.Error != nil {
+	if result := s.Handler.DB.Where(&models.User{Email: claims.Email}).First(&user); result.Error != nil {
 		return &pb.ValidateResponse{
 			Status: http.StatusNotFound,
 			Error:  "User not found",
