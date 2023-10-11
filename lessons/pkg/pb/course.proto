@@ -44,8 +44,7 @@ message Course {
   string name = 2;
   int64 teacherId = 3;
   int64 classId = 4;
-  repeated string dates = 5;
-  repeated Mark marks = 6;
+  repeated Mark marks = 5;
 }
 
 message Mark {

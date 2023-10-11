@@ -43,7 +43,6 @@ func (c *CourseServer) GetCourse(ctx context.Context, req *pb.ID) (*pb.CourseRes
 		Name:      course.Name,
 		TeacherId: course.TeacherID,
 		ClassId:   course.ClassID,
-		Dates:     course.Dates,
 	}
 
 	for _, mark := range course.Marks {
