@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package school;
+
+option go_package = "./pkg/pb";
+
+service SchoolService {
+  rpc CreateSchool(SchoolRequest) returns (CreateResponse) {}
+  rpc CreateClass(ClassRequest) returns (CreateResponse) {}
+  rpc GetClass(ID) returns (ClassResponse) {}
+  rpc CreateStudent(StudentRequest) returns (CreateResponse){}
+  rpc CheckHealth(HealthRequest) returns (HealthResponse){}
+}
+
+message SchoolRequest {
+  string name = 1;
+}
+
+message CreateResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message ClassRequest {
+  string name = 1;
+  int64 headTeacher = 2;
+  int64 schoolId = 3;
+}
+
+message Class{
+  int64 id = 1;
+  string name = 2;
+  int64 headTeacher = 3;
+  int64 schoolId = 4;
+}
+
+message ClassResponse {
+  int64 status = 1;
+  string error = 2;
+  Class data = 3;
+}
+
+message StudentRequest{
+  int64 userID = 1;
+  int64 classID = 2;
+}
+
+message HealthRequest {
+  bool check = 1;
+}
+
+message HealthResponse{
+  bool healthy = 1;
+}
+
+message ID { int64 id = 1; }
