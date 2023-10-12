@@ -15,6 +15,19 @@ type CourseServer struct {
 	AuthClient   client.AuthServiceClient
 }
 
+func (c *CourseServer) CheckHealth(ctx context.Context, req *pb.HealthRequest) (*pb.HealthResponse, error) {
+
+	sqlDB, err := c.Handler.DB.DB()
+	if err != nil {
+		return &pb.HealthResponse{Healthy: false}, nil
+	}
+	err = sqlDB.Ping()
+	if err != nil {
+		return &pb.HealthResponse{Healthy: false}, nil
+	}
+	return &pb.HealthResponse{Healthy: true}, nil
+}
+
 func (c *CourseServer) CreateCourse(ctx context.Context, request *pb.CourseRequest) (*pb.CourseCreateResponse, error) {
 	var course models.Course
 

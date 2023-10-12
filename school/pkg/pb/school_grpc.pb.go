@@ -26,6 +26,7 @@ type SchoolServiceClient interface {
 	CreateClass(ctx context.Context, in *ClassRequest, opts ...grpc.CallOption) (*CreateResponse, error)
 	GetClass(ctx context.Context, in *ID, opts ...grpc.CallOption) (*ClassResponse, error)
 	CreateStudent(ctx context.Context, in *StudentRequest, opts ...grpc.CallOption) (*CreateResponse, error)
+	CheckHealth(ctx context.Context, in *HealthRequest, opts ...grpc.CallOption) (*HealthResponse, error)
 }
 
 type schoolServiceClient struct {
@@ -72,6 +73,15 @@ func (c *schoolServiceClient) CreateStudent(ctx context.Context, in *StudentRequ
 	return out, nil
 }
 
+func (c *schoolServiceClient) CheckHealth(ctx context.Context, in *HealthRequest, opts ...grpc.CallOption) (*HealthResponse, error) {
+	out := new(HealthResponse)
+	err := c.cc.Invoke(ctx, "/school.SchoolService/CheckHealth", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SchoolServiceServer is the server API for SchoolService service.
 // All implementations should embed UnimplementedSchoolServiceServer
 // for forward compatibility
@@ -80,6 +90,7 @@ type SchoolServiceServer interface {
 	CreateClass(context.Context, *ClassRequest) (*CreateResponse, error)
 	GetClass(context.Context, *ID) (*ClassResponse, error)
 	CreateStudent(context.Context, *StudentRequest) (*CreateResponse, error)
+	CheckHealth(context.Context, *HealthRequest) (*HealthResponse, error)
 }
 
 // UnimplementedSchoolServiceServer should be embedded to have forward compatible implementations.
@@ -97,6 +108,9 @@ func (UnimplementedSchoolServiceServer) GetClass(context.Context, *ID) (*ClassRe
 }
 func (UnimplementedSchoolServiceServer) CreateStudent(context.Context, *StudentRequest) (*CreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateStudent not implemented")
+}
+func (UnimplementedSchoolServiceServer) CheckHealth(context.Context, *HealthRequest) (*HealthResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckHealth not implemented")
 }
 
 // UnsafeSchoolServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -182,6 +196,24 @@ func _SchoolService_CreateStudent_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SchoolService_CheckHealth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HealthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SchoolServiceServer).CheckHealth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/school.SchoolService/CheckHealth",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SchoolServiceServer).CheckHealth(ctx, req.(*HealthRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SchoolService_ServiceDesc is the grpc.ServiceDesc for SchoolService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -204,6 +236,10 @@ var SchoolService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateStudent",
 			Handler:    _SchoolService_CreateStudent_Handler,
+		},
+		{
+			MethodName: "CheckHealth",
+			Handler:    _SchoolService_CheckHealth_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

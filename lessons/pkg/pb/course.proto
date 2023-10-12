@@ -9,6 +9,7 @@ service CourseService {
   rpc GetCourse(CourseID) returns (CourseResponse) {}
   rpc CreateLesson(LessonRequest) returns (CourseCreateResponse) {}
   rpc CreateMark(MarkRequest) returns (CourseCreateResponse){}
+  rpc CheckHealth(HealthRequest) returns (HealthResponse){}
 }
 
 message CourseRequest {
@@ -60,6 +61,14 @@ message CourseResponse {
   int64 status = 1;
   string error = 2;
   Course data = 3;
+}
+
+message HealthRequest {
+  bool check = 1;
+}
+
+message HealthResponse{
+  bool healthy = 1;
 }
 
 message CourseID { int64 id = 1; }

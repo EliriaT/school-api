@@ -12,6 +12,19 @@ type SchoolServer struct {
 	Handler db.Handler
 }
 
+func (c *SchoolServer) CheckHealth(ctx context.Context, req *pb.HealthRequest) (*pb.HealthResponse, error) {
+
+	sqlDB, err := c.Handler.DB.DB()
+	if err != nil {
+		return &pb.HealthResponse{Healthy: false}, nil
+	}
+	err = sqlDB.Ping()
+	if err != nil {
+		return &pb.HealthResponse{Healthy: false}, nil
+	}
+	return &pb.HealthResponse{Healthy: true}, nil
+}
+
 func (s *SchoolServer) CreateSchool(ctx context.Context, req *pb.SchoolRequest) (*pb.CreateResponse, error) {
 	var school models.School
 

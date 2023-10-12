@@ -9,6 +9,7 @@ service SchoolService {
   rpc CreateClass(ClassRequest) returns (CreateResponse) {}
   rpc GetClass(ID) returns (ClassResponse) {}
   rpc CreateStudent(StudentRequest) returns (CreateResponse){}
+  rpc CheckHealth(HealthRequest) returns (HealthResponse){}
 }
 
 message SchoolRequest {
@@ -42,6 +43,14 @@ message ClassResponse {
 message StudentRequest{
   int64 userID = 1;
   int64 classID = 2;
+}
+
+message HealthRequest {
+  bool check = 1;
+}
+
+message HealthResponse{
+  bool healthy = 1;
 }
 
 message ID { int64 id = 1; }

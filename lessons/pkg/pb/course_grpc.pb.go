@@ -26,6 +26,7 @@ type CourseServiceClient interface {
 	GetCourse(ctx context.Context, in *CourseID, opts ...grpc.CallOption) (*CourseResponse, error)
 	CreateLesson(ctx context.Context, in *LessonRequest, opts ...grpc.CallOption) (*CourseCreateResponse, error)
 	CreateMark(ctx context.Context, in *MarkRequest, opts ...grpc.CallOption) (*CourseCreateResponse, error)
+	CheckHealth(ctx context.Context, in *HealthRequest, opts ...grpc.CallOption) (*HealthResponse, error)
 }
 
 type courseServiceClient struct {
@@ -72,6 +73,15 @@ func (c *courseServiceClient) CreateMark(ctx context.Context, in *MarkRequest, o
 	return out, nil
 }
 
+func (c *courseServiceClient) CheckHealth(ctx context.Context, in *HealthRequest, opts ...grpc.CallOption) (*HealthResponse, error) {
+	out := new(HealthResponse)
+	err := c.cc.Invoke(ctx, "/course.CourseService/CheckHealth", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CourseServiceServer is the server API for CourseService service.
 // All implementations should embed UnimplementedCourseServiceServer
 // for forward compatibility
@@ -80,6 +90,7 @@ type CourseServiceServer interface {
 	GetCourse(context.Context, *CourseID) (*CourseResponse, error)
 	CreateLesson(context.Context, *LessonRequest) (*CourseCreateResponse, error)
 	CreateMark(context.Context, *MarkRequest) (*CourseCreateResponse, error)
+	CheckHealth(context.Context, *HealthRequest) (*HealthResponse, error)
 }
 
 // UnimplementedCourseServiceServer should be embedded to have forward compatible implementations.
@@ -97,6 +108,9 @@ func (UnimplementedCourseServiceServer) CreateLesson(context.Context, *LessonReq
 }
 func (UnimplementedCourseServiceServer) CreateMark(context.Context, *MarkRequest) (*CourseCreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMark not implemented")
+}
+func (UnimplementedCourseServiceServer) CheckHealth(context.Context, *HealthRequest) (*HealthResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckHealth not implemented")
 }
 
 // UnsafeCourseServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -182,6 +196,24 @@ func _CourseService_CreateMark_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CourseService_CheckHealth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HealthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CourseServiceServer).CheckHealth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/course.CourseService/CheckHealth",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CourseServiceServer).CheckHealth(ctx, req.(*HealthRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CourseService_ServiceDesc is the grpc.ServiceDesc for CourseService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -204,6 +236,10 @@ var CourseService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateMark",
 			Handler:    _CourseService_CreateMark_Handler,
+		},
+		{
+			MethodName: "CheckHealth",
+			Handler:    _CourseService_CheckHealth_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
