@@ -118,8 +118,6 @@ create users. **Authorization header required**
     "email": "irinatiora7@gmail.com",
     "lastName": "Tiora",
     "firstName": "Irina",
-    "passwordChangedAt": "0001-01-01T00:00:00Z",
-    "createdAt": "2023-09-27T04:56:50.346801Z",
     "school_id": 1,
     "role_id": 2
 }
@@ -174,8 +172,6 @@ create users. **Authorization header required**
 {
     "id": 3,
     "name": "I.P.L.T. Mihai Viteazu",
-    "createdAt": "2023-09-27T16:52:04.804778Z",
-    "updatedAt": "0001-01-01T00:00:00Z"
 }
 ```
 </details>
@@ -204,14 +200,11 @@ create users. **Authorization header required**
     "name": "Clasa 6",
     "head_teacher": 2,
     "school_id": 4,
-    "createdAt": "0001-01-01T00:00:00Z",
-    "updatedAt": "0001-01-01T00:00:00Z"
 }
 ```
 </details>
 
-`– GET /class` -  Response is based on user’s role. If it is a director or school manager, all classes are returned,
-otherwise the user’s class. 
+`– GET /class/:id` -  Get a class by id
 
 <details>
            <summary>Response Body</summary>
@@ -224,8 +217,6 @@ otherwise the user’s class.
         "head_teacher": 3,
         "school_id": 4,
         "head_teacher_name": "Noroc Viorel",
-        "createdAt": "0001-01-01T00:00:00Z",
-        "updatedAt": "0001-01-01T00:00:00Z"
     }
 ]
 ```
@@ -259,8 +250,6 @@ otherwise the user’s class.
     "teacher_id": 3,
     "semester_id": 1,
     "class_id": 1,
-    "createdAt": "2023-09-27T17:04:49.9149Z",
-    "updatedAt": "0001-01-01T00:00:00Z"
 }
 ```
 </details>
@@ -286,8 +275,6 @@ marks, a teacher will see all marks to their taught subject.
         "is_absent": false,
         "mark": 7,
         "student_id": 3,
-        "createdAt":  "2023-09-27T17:04:49.9149Z",
-        "updatedAt": null
     ]
 }
 ```
