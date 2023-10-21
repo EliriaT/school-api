@@ -12,6 +12,7 @@ type SchoolServer struct {
 	Handler db.Handler
 }
 
+// TODO can provide the info about connections
 func (c *SchoolServer) CheckHealth(ctx context.Context, req *pb.HealthRequest) (*pb.HealthResponse, error) {
 
 	sqlDB, err := c.Handler.DB.DB()
@@ -105,6 +106,15 @@ func (s *SchoolServer) CreateClass(ctx context.Context, req *pb.ClassRequest) (*
 
 func (s *SchoolServer) GetClass(ctx context.Context, req *pb.ID) (*pb.ClassResponse, error) {
 	var class models.Class
+
+	// this is for testing concurrency task limit
+	//s.Handler.DB.Transaction(func(tx *gorm.DB) error {
+	//	time.Sleep(time.Second * 8)
+	//
+	//	// return nil will commit the whole transaction
+	//	return nil
+	//})
+
 	if result := s.Handler.DB.First(&class, req.Id); result.Error != nil {
 		return &pb.ClassResponse{
 			Status: http.StatusNotFound,
@@ -118,7 +128,8 @@ func (s *SchoolServer) GetClass(ctx context.Context, req *pb.ID) (*pb.ClassRespo
 		HeadTeacher: class.HeadTeacherId,
 		SchoolId:    class.SchoolId,
 	}
-
+	// this is for testing request timeout
+	// time.Sleep(time.Minute * 1)
 	return &pb.ClassResponse{
 		Status: http.StatusOK,
 		Data:   data,

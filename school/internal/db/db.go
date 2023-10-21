@@ -23,5 +23,16 @@ func Init(url string) Handler {
 	db.AutoMigrate(&models.Class{})
 	db.AutoMigrate(&models.Student{})
 
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	//For testing max concurrency task limit
+	sqlDB.SetMaxIdleConns(-2)
+	sqlDB.SetMaxOpenConns(1)
+
+	//sqlDB.SetMaxIdleConns(4)
+	//sqlDB.SetMaxOpenConns(10)
+
 	return Handler{db}
 }

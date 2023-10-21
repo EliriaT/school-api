@@ -21,5 +21,12 @@ func Init(url string) Handler {
 	db.AutoMigrate(&models.Lesson{})
 	db.AutoMigrate(&models.Mark{})
 
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	sqlDB.SetMaxIdleConns(4)
+	sqlDB.SetMaxOpenConns(10)
+
 	return Handler{db}
 }

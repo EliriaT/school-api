@@ -2,6 +2,9 @@ defmodule Course.Client do
   use GenServer
   require Logger
 
+  @timeout 4000
+  @gen_server_timeout 10000
+
   def start_link(conn) do
     GenServer.start_link(__MODULE__, conn, name: __MODULE__)
   end
@@ -11,19 +14,19 @@ defmodule Course.Client do
   end
 
   def create_course(body) do
-    GenServer.call(__MODULE__, {:create_course, body})
+    GenServer.call(__MODULE__, {:create_course, body},  @gen_server_timeout)
   end
 
   def create_lesson(body) do
-    GenServer.call(__MODULE__, {:create_lesson, body})
+    GenServer.call(__MODULE__, {:create_lesson, body},  @gen_server_timeout)
   end
 
   def create_mark(body) do
-    GenServer.call(__MODULE__, {:create_mark, body})
+    GenServer.call(__MODULE__, {:create_mark, body}, @gen_server_timeout)
   end
 
   def get_course(id) do
-    GenServer.call(__MODULE__, {:get_course, id})
+    GenServer.call(__MODULE__, {:get_course, id}, @gen_server_timeout)
   end
 
   def handle_call(
@@ -37,7 +40,7 @@ defmodule Course.Client do
       teacherId: String.to_integer(teacherId)
     }
 
-    resp = conn |> Course.CourseService.Stub.create_course(request, timeout: 1500)
+    resp = conn |> Course.CourseService.Stub.create_course(request, timeout: @timeout)
     {:reply, resp, conn}
   end
 
@@ -63,7 +66,7 @@ defmodule Course.Client do
       weekDay: weekDay
     }
 
-    resp = conn |> Course.CourseService.Stub.create_lesson(request, timeout: 1500)
+    resp = conn |> Course.CourseService.Stub.create_lesson(request, timeout: @timeout)
     {:reply, resp, conn}
   end
 
@@ -88,13 +91,13 @@ defmodule Course.Client do
       studentId: String.to_integer(studentId)
     }
 
-    resp = conn |> Course.CourseService.Stub.create_mark(request, timeout: 1500)
+    resp = conn |> Course.CourseService.Stub.create_mark(request, timeout: @timeout)
     {:reply, resp, conn}
   end
 
   def handle_call({:get_course, id}, _from, conn) do
     request = %Course.CourseID{id: id}
-    resp = conn |> Course.CourseService.Stub.get_course(request, timeout: 1500)
+    resp = conn |> Course.CourseService.Stub.get_course(request, timeout: @timeout)
     IO.inspect(resp)
     {:reply, resp, conn}
   end
