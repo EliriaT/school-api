@@ -37,7 +37,7 @@ defmodule Course.Client do
       teacherId: String.to_integer(teacherId)
     }
 
-    resp = conn |> Course.CourseService.Stub.create_course(request)
+    resp = conn |> Course.CourseService.Stub.create_course(request, timeout: 1500)
     {:reply, resp, conn}
   end
 
@@ -63,7 +63,7 @@ defmodule Course.Client do
       weekDay: weekDay
     }
 
-    resp = conn |> Course.CourseService.Stub.create_lesson(request)
+    resp = conn |> Course.CourseService.Stub.create_lesson(request, timeout: 1500)
     {:reply, resp, conn}
   end
 
@@ -88,13 +88,14 @@ defmodule Course.Client do
       studentId: String.to_integer(studentId)
     }
 
-    resp = conn |> Course.CourseService.Stub.create_mark(request)
+    resp = conn |> Course.CourseService.Stub.create_mark(request, timeout: 1500)
     {:reply, resp, conn}
   end
 
   def handle_call({:get_course, id}, _from, conn) do
     request = %Course.CourseID{id: id}
-    resp = conn |> Course.CourseService.Stub.get_course(request)
+    resp = conn |> Course.CourseService.Stub.get_course(request, timeout: 1500)
+    IO.inspect(resp)
     {:reply, resp, conn}
   end
 end

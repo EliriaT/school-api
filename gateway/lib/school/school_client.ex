@@ -28,14 +28,14 @@ defmodule School.Client do
 
   def handle_call({:get_class, id}, _from, conn) do
     request = %School.ID{id: id}
-    resp = conn |> School.SchoolService.Stub.get_class(request)
+    resp = conn |> School.SchoolService.Stub.get_class(request, timeout: 1500)
     {:reply, resp, conn}
   end
 
   def handle_call({:create_school, %{"name" => name}}, _from, conn) do
     request = %School.SchoolRequest{name: name}
 
-    resp = conn |> School.SchoolService.Stub.create_school(request)
+    resp = conn |> School.SchoolService.Stub.create_school(request, timeout: 1500)
     {:reply, resp, conn}
   end
 
@@ -50,7 +50,7 @@ defmodule School.Client do
       schoolId: String.to_integer(schoolId)
     }
 
-    resp = conn |> School.SchoolService.Stub.create_class(request)
+    resp = conn |> School.SchoolService.Stub.create_class(request, timeout: 1500)
     {:reply, resp, conn}
   end
 
@@ -60,7 +60,7 @@ defmodule School.Client do
       classID: String.to_integer(classID)
     }
 
-    resp = conn |> School.SchoolService.Stub.create_student(request)
+    resp = conn |> School.SchoolService.Stub.create_student(request, timeout: 1500)
     {:reply, resp, conn}
   end
 end

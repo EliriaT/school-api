@@ -29,13 +29,13 @@ defmodule Auth.Client do
   def handle_call({:get_user, id}, _from, conn) do
     # Logger.info(conn)
     request = %Auth.EntityID{id: id}
-    resp = conn |> Auth.AuthService.Stub.get_user(request)
+    resp = conn |> Auth.AuthService.Stub.get_user(request, timeout: 1500)
     {:reply, resp, conn}
   end
 
   def handle_call({:login, %{"email" => email, "password" => password}}, _from, conn) do
     request = %Auth.LoginRequest{email: email, password: password}
-    resp = conn |> Auth.AuthService.Stub.login(request)
+    resp = conn |> Auth.AuthService.Stub.login(request, timeout: 1500)
     {:reply, resp, conn}
   end
 
@@ -59,13 +59,13 @@ defmodule Auth.Client do
       roleId: String.to_integer(roleId)
     }
 
-    resp = conn |> Auth.AuthService.Stub.register(request)
+    resp = conn |> Auth.AuthService.Stub.register(request, timeout: 1500)
     {:reply, resp, conn}
   end
 
   def handle_call({:token_check, token}, _from, conn) do
     request = %Auth.ValidateRequest{token: token}
-    resp = conn |> Auth.AuthService.Stub.validate(request)
+    resp = conn |> Auth.AuthService.Stub.validate(request, timeout: 1500)
     {:reply, resp, conn}
   end
 end

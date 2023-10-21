@@ -36,6 +36,11 @@ defmodule Gateway do
         reply = Auth.Client.register(body)
 
         case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
+
           {:error, error} ->
             send_resp(conn, 500, error)
 
@@ -69,6 +74,11 @@ defmodule Gateway do
         reply = Auth.Client.login(body)
 
         case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
+
           {:error, error} ->
             send_resp(conn, 500, error)
 
@@ -101,6 +111,11 @@ defmodule Gateway do
         reply = Auth.Client.validate(token)
 
         case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
+
           {:error, error} ->
             send_resp(conn, 500, error)
 
@@ -130,6 +145,11 @@ defmodule Gateway do
     reply = Auth.Client.get_user(id)
 
     case reply do
+      {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+        conn
+        |> put_resp_header("Connection", "close")
+        |> send_resp(408, "Request timeout")
+
       {:error, error} ->
         send_resp(conn, 500, error)
 
@@ -159,6 +179,11 @@ defmodule Gateway do
         reply = School.Client.create_school(body)
 
         case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
+
           {:error, error} ->
             send_resp(conn, 500, error)
 
@@ -193,6 +218,11 @@ defmodule Gateway do
         reply = School.Client.create_class(body)
 
         case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
+
           {:error, error} ->
             send_resp(conn, 500, error)
 
@@ -226,6 +256,11 @@ defmodule Gateway do
         reply = School.Client.create_student(body)
 
         case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
+
           {:error, error} ->
             send_resp(conn, 500, error)
 
@@ -255,6 +290,11 @@ defmodule Gateway do
     reply = School.Client.get_class(id)
 
     case reply do
+      {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+        conn
+        |> put_resp_header("Connection", "close")
+        |> send_resp(408, "Request timeout")
+
       {:error, error} ->
         send_resp(conn, 500, error)
 
@@ -288,6 +328,11 @@ defmodule Gateway do
         reply = Course.Client.create_course(body)
 
         case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
+
           {:error, error} ->
             send_resp(conn, 500, error)
 
@@ -317,6 +362,11 @@ defmodule Gateway do
     reply = Course.Client.get_course(id)
 
     case reply do
+      {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+        conn
+        |> put_resp_header("Connection", "close")
+        |> send_resp(408, "Request timeout")
+
       {:error, error} ->
         send_resp(conn, 500, error)
 
@@ -351,6 +401,11 @@ defmodule Gateway do
         reply = Course.Client.create_lesson(body)
 
         case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
+
           {:error, error} ->
             send_resp(conn, 500, error)
 
@@ -387,6 +442,11 @@ defmodule Gateway do
         reply = Course.Client.create_mark(body)
 
         case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
+
           {:error, error} ->
             send_resp(conn, 500, error)
 
