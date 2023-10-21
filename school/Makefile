@@ -15,6 +15,9 @@ postgres:
 restartpg:
 	docker restart postgres12
 
+stopdb:
+	docker stop postgres12
+
 createdb:
 	docker exec -it postgres12 createdb --username=root --owner=root school
 

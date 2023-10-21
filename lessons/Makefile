@@ -15,6 +15,9 @@ postgres:
 restartpg:
 	docker restart postgres123
 
+stopdb:
+	docker stop postgres123
+
 createdb:
 	docker exec -it postgres123 createdb --username=root --owner=root lessons
 

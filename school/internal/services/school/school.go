@@ -39,6 +39,7 @@ func (s *SchoolServer) CreateSchool(ctx context.Context, req *pb.SchoolRequest) 
 	return &pb.CreateResponse{Status: http.StatusCreated}, nil
 }
 
+// TODO SHOULD ADD UNIQUE CONSTRAIN ON USER ID AND CLASS ID AND CHECK USER ROLE
 func (s *SchoolServer) CreateStudent(ctx context.Context, req *pb.StudentRequest) (*pb.CreateResponse, error) {
 	var student models.Student
 

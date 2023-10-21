@@ -31,7 +31,7 @@ func (c *CourseServer) CheckHealth(ctx context.Context, req *pb.HealthRequest) (
 func (c *CourseServer) CreateCourse(ctx context.Context, request *pb.CourseRequest) (*pb.CourseCreateResponse, error) {
 	var course models.Course
 
-	//TODO should check role of user so that it is teacher
+	// TODO should check role of user so that it is teacher
 	class, err := c.SchoolClient.GetClass(request.ClassId)
 	if err != nil {
 		return &pb.CourseCreateResponse{
@@ -134,8 +134,8 @@ func (c *CourseServer) CreateLesson(ctx context.Context, request *pb.LessonReque
 func (c *CourseServer) CreateMark(ctx context.Context, request *pb.MarkRequest) (*pb.CourseCreateResponse, error) {
 	var mark models.Mark
 
-	//TODO check existence of student ID
-	//TODO should check role of user
+	// TODO check existence of student ID
+	// TODO should check role of user
 	user, err := c.AuthClient.GetUser(request.StudentId)
 	if err != nil {
 		return &pb.CourseCreateResponse{
