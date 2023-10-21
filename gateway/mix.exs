@@ -5,6 +5,7 @@ defmodule Gateway.MixProject do
     [
       app: :gateway,
       version: "0.1.0",
+      escript: escript(),
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       deps: deps()
@@ -14,7 +15,8 @@ defmodule Gateway.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {APIGateway, []}
     ]
   end
 
@@ -26,7 +28,12 @@ defmodule Gateway.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:jason, "~> 1.4"},
       {:grpc, "~> 0.7"},
-      {:protobuf, "~> 0.11"}
+      {:protobuf, "~> 0.11"},
+      {:google_protos, "~> 0.1"}
     ]
+  end
+
+  defp escript do
+    [main_module: APIGateway]
   end
 end

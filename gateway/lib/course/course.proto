@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package course;
+
+option go_package = "./pkg/pb";
+
+service CourseService {
+  rpc CreateCourse(CourseRequest) returns (CourseCreateResponse) {}
+  rpc GetCourse(CourseID) returns (CourseResponse) {}
+  rpc CreateLesson(LessonRequest) returns (CourseCreateResponse) {}
+  rpc CreateMark(MarkRequest) returns (CourseCreateResponse){}
+  rpc CheckHealth(HealthRequest) returns (HealthResponse){}
+}
+
+message CourseRequest {
+  string name = 1;
+  int64 teacherId = 2;
+  int64 classId = 3;
+}
+
+message LessonRequest{
+  string name = 1;
+  int64 courseId = 2;
+  string startHour = 3;
+  string endHour = 4;
+  string weekDay = 5;
+  string classRoom = 6;
+}
+
+message MarkRequest{
+  int64 courseId = 1;
+  string markDate = 2;
+  bool isAbsent = 3;
+  int32  mark = 4;
+  int64 studentId = 5;
+}
+
+message CourseCreateResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message Course {
+  int64 id = 1;
+  string name = 2;
+  int64 teacherId = 3;
+  int64 classId = 4;
+  repeated Mark marks = 5;
+}
+
+message Mark {
+  int64 id = 1;
+  int64 courseId = 2;
+  string markDate = 3;
+  bool isAbsent = 4;
+  int32  mark = 5;
+  int64 studentId = 6;
+}
+
+message CourseResponse {
+  int64 status = 1;
+  string error = 2;
+  Course data = 3;
+}
+
+message HealthRequest {
+  bool check = 1;
+}
+
+message HealthResponse{
+  bool healthy = 1;
+}
+
+message CourseID { int64 id = 1; }

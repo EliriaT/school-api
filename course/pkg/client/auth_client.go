@@ -2,7 +2,7 @@ package client
 
 import (
 	"context"
-	"github.com/EliriaT/school-api/lessons/pkg/pb"
+	"github.com/EliriaT/school-api/course/pkg/pb"
 	"google.golang.org/grpc"
 	"log"
 )

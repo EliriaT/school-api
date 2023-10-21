@@ -1,23 +1,9 @@
-# elixir --no-halt lib/check5/main.ex
+# elixir --no-halt lib/gateway.ex
 # iex -S mix run
 # Gateway.start(nil,nil)
-# protoc --elixir_out=plugins=grpc:./lib/proto ./lib/proto/*.proto
+# protoc --elixir_out=plugins=grpc:. ./lib/auth/auth.proto
 
 defmodule Gateway do
-  use Application
-
-  @impl true
-  def start(_type, _args) do
-    children = [
-      {Plug.Cowboy, scheme: :http, plug: Main.Router, options: [port: 8080]},
-    ]
-
-    opts = [strategy: :one_for_one, name: Gateway.Supervisor]
-    Supervisor.start_link(children, opts)
-  end
-end
-
-defmodule Main.Router do
   use Plug.Router
 
   plug(Plug.Logger)
@@ -32,15 +18,124 @@ defmodule Main.Router do
 
   plug(:dispatch)
 
-#  @defaults %{"director" => "", "release_year" => 0, "title" => ""}
+  #  @defaults %{"director" => "", "release_year" => 0, "title" => ""}
 
   get "/" do
     send_resp(conn, 200, "world")
   end
 
-  get "/class" do
-    send_resp(conn, 200, "class")
+  get "/users/:id" do
+    id = String.to_integer(id)
+    reply = Auth.Client.get_user(id)
+
+    case reply do
+      {:error, error} ->
+        send_resp(conn, 500, error)
+
+      {:ok, user} ->
+        jsonResp = Protobuf.JSON.encode(user)
+
+        case jsonResp do
+          {:ok, jsonResp} ->
+            conn
+            |> put_resp_content_type("application/json")
+            |> send_resp(200, jsonResp)
+
+          {:error, _} ->
+            send_resp(conn, 500, "json encoding failed")
+        end
+
+      _ ->
+        send_resp(conn, 500, "")
+    end
   end
+
+  post "/users" do
+
+  end
+
+  post "/users/login" do
+
+  end
+
+  post "/users/token" do
+
+  end
+
+  post "/schools" do
+
+  end
+
+  post "/class" do
+
+  end
+
+  get "/class/:id" do
+    id = String.to_integer(id)
+    reply = School.Client.get_class(id)
+
+    case reply do
+      {:error, error} ->
+        send_resp(conn, 500, error)
+
+      {:ok, class} ->
+        jsonResp = Protobuf.JSON.encode(class)
+
+        case jsonResp do
+          {:ok, jsonResp} ->
+            conn
+            |> put_resp_content_type("application/json")
+            |> send_resp(200, jsonResp)
+
+          {:error, _} ->
+            send_resp(conn, 500, "json encoding failed")
+        end
+
+      _ ->
+        send_resp(conn, 500, "")
+    end
+  end
+
+  # course service
+
+  post "/course" do
+
+  end
+
+  get  "/course/:id" do
+    id = String.to_integer(id)
+    reply = Course.Client.get_course(id)
+
+    case reply do
+      {:error, error} ->
+        send_resp(conn, 500, error)
+
+      {:ok, class} ->
+        jsonResp = Protobuf.JSON.encode(class)
+
+        case jsonResp do
+          {:ok, jsonResp} ->
+            conn
+            |> put_resp_content_type("application/json")
+            |> send_resp(200, jsonResp)
+
+          {:error, _} ->
+            send_resp(conn, 500, "json encoding failed")
+        end
+
+      _ ->
+        send_resp(conn, 500, "")
+    end
+  end
+
+  post  "/lesson" do
+
+  end
+
+  post  "/mark" do
+
+  end
+
 
   match _ do
     conn

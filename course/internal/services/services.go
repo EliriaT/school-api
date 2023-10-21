@@ -2,10 +2,10 @@ package services
 
 import (
 	"context"
-	"github.com/EliriaT/school-api/lessons/internal/db"
-	"github.com/EliriaT/school-api/lessons/pkg/client"
-	"github.com/EliriaT/school-api/lessons/pkg/models"
-	"github.com/EliriaT/school-api/lessons/pkg/pb"
+	"github.com/EliriaT/school-api/course/internal/db"
+	"github.com/EliriaT/school-api/course/pkg/client"
+	"github.com/EliriaT/school-api/course/pkg/models"
+	"github.com/EliriaT/school-api/course/pkg/pb"
 	"net/http"
 )
 

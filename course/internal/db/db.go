@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/EliriaT/school-api/lessons/pkg/models"
+	"github.com/EliriaT/school-api/course/pkg/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"

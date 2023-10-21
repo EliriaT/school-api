@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/EliriaT/school-api/lessons/internal/db"
-	"github.com/EliriaT/school-api/lessons/internal/services"
-	"github.com/EliriaT/school-api/lessons/pkg/client"
-	config "github.com/EliriaT/school-api/lessons/pkg/config"
-	"github.com/EliriaT/school-api/lessons/pkg/pb"
+	"github.com/EliriaT/school-api/course/internal/db"
+	"github.com/EliriaT/school-api/course/internal/services"
+	"github.com/EliriaT/school-api/course/pkg/client"
+	config "github.com/EliriaT/school-api/course/pkg/config"
+	"github.com/EliriaT/school-api/course/pkg/pb"
 	"google.golang.org/grpc"
 	"log"
 	"net"
