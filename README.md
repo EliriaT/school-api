@@ -150,20 +150,6 @@ create users. **Authorization header required**
 ```
 </details>
 
-`– POST /users/accountrecovery/:email/:token` - Change a user’s password. 
-
-<details>
-           <summary>Request Body</summary>
-
-```
-{
-    "password": "7SnowWindowStudent7"
-}
-```
-
-</details>
-
-
 `– GEY /users/:id` - Get a user by id
 
 * **Schools Administration Service**
