@@ -18,8 +18,6 @@ defmodule Gateway do
 
   plug(:dispatch)
 
-  #  @defaults %{"director" => "", "release_year" => 0, "title" => ""}
-
   get "/" do
     send_resp(conn, 200, "world")
   end
@@ -141,33 +139,53 @@ defmodule Gateway do
   end
 
   get "/users/:id" do
-    id = String.to_integer(id)
-    reply = Auth.Client.get_user(id)
+    # Extract from cache if present
+    case Redix.command(:redix, ["GET", "user" <> id]) do
+      {:ok, nil} ->
+        id = String.to_integer(id)
+        reply = Auth.Client.get_user(id)
 
-    case reply do
-      {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-        conn
-        |> put_resp_header("Connection", "close")
-        |> send_resp(408, "Request timeout")
-
-      {:error, error} ->
-        send_resp(conn, 500, error)
-
-      {:ok, user} ->
-        jsonResp = Protobuf.JSON.encode(user)
-
-        case jsonResp do
-          {:ok, jsonResp} ->
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
             conn
-            |> put_resp_content_type("application/json")
-            |> send_resp(user.status, jsonResp)
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-          {:error, _} ->
-            send_resp(conn, 500, "json encoding failed")
+          {:error, error} ->
+            send_resp(conn, 500, error)
+
+          {:ok, user} ->
+            jsonResp = Protobuf.JSON.encode(user)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                # Put in cache
+                if user.status != 404 do
+                  Redix.command(:redix, [
+                    "SET",
+                    "user" <> Integer.to_string(user.data.id),
+                    jsonResp
+                  ])
+                end
+
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(user.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+
+          _ ->
+            send_resp(conn, 500, "")
         end
 
-      _ ->
-        send_resp(conn, 500, "")
+      {:ok, body} ->
+        {:ok, respMap} = Protobuf.JSON.decode(body, Auth.UserResponse)
+
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(respMap.status, body)
     end
   end
 
@@ -286,33 +304,52 @@ defmodule Gateway do
   end
 
   get "/class/:id" do
-    id = String.to_integer(id)
-    reply = School.Client.get_class(id)
+    # Extract from cache if present
+    case Redix.command(:redix, ["GET", "class" <> id]) do
+      {:ok, nil} ->
+        id = String.to_integer(id)
+        reply = School.Client.get_class(id)
 
-    case reply do
-      {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-        conn
-        |> put_resp_header("Connection", "close")
-        |> send_resp(408, "Request timeout")
-
-      {:error, error} ->
-        send_resp(conn, 500, error)
-
-      {:ok, class} ->
-        jsonResp = Protobuf.JSON.encode(class)
-
-        case jsonResp do
-          {:ok, jsonResp} ->
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
             conn
-            |> put_resp_content_type("application/json")
-            |> send_resp(class.status, jsonResp)
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-          {:error, _} ->
-            send_resp(conn, 500, "json encoding failed")
+          {:error, error} ->
+            send_resp(conn, 500, error)
+
+          {:ok, class} ->
+            jsonResp = Protobuf.JSON.encode(class)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                if class.status != 404 do
+                  Redix.command(:redix, [
+                    "SET",
+                    "class" <> Integer.to_string(class.data.id),
+                    jsonResp
+                  ])
+                end
+
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(class.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+
+          _ ->
+            send_resp(conn, 500, "")
         end
 
-      _ ->
-        send_resp(conn, 500, "")
+      {:ok, body} ->
+        {:ok, respMap} = Protobuf.JSON.decode(body, School.ClassResponse)
+
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(respMap.status, body)
     end
   end
 
@@ -358,33 +395,51 @@ defmodule Gateway do
   end
 
   get "/course/:id" do
-    id = String.to_integer(id)
-    reply = Course.Client.get_course(id)
+    case Redix.command(:redix, ["GET", "course" <> id]) do
+      {:ok, nil} ->
+        id = String.to_integer(id)
+        reply = Course.Client.get_course(id)
 
-    case reply do
-      {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-        conn
-        |> put_resp_header("Connection", "close")
-        |> send_resp(408, "Request timeout")
-
-      {:error, error} ->
-        send_resp(conn, 500, error)
-
-      {:ok, course} ->
-        jsonResp = Protobuf.JSON.encode(course)
-
-        case jsonResp do
-          {:ok, jsonResp} ->
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
             conn
-            |> put_resp_content_type("application/json")
-            |> send_resp(course.status, jsonResp)
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-          {:error, _} ->
-            send_resp(conn, 500, "json encoding failed")
+          {:error, error} ->
+            send_resp(conn, 500, error)
+
+          {:ok, course} ->
+            jsonResp = Protobuf.JSON.encode(course)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                if course.status != 404 do
+                  Redix.command(:redix, [
+                    "SET",
+                    "course" <> Integer.to_string(course.data.id),
+                    jsonResp
+                  ])
+                end
+
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(course.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+
+          _ ->
+            send_resp(conn, 500, "")
         end
 
-      _ ->
-        send_resp(conn, 500, "")
+      {:ok, body} ->
+        {:ok, respMap} = Protobuf.JSON.decode(body, Course.CourseResponse)
+
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(respMap.status, body)
     end
   end
 
@@ -452,6 +507,7 @@ defmodule Gateway do
 
           {:ok, protoReply} ->
             jsonResp = Protobuf.JSON.encode(protoReply)
+            Redix.command(:redix, ["DEL", "course" <> courseId])
 
             case jsonResp do
               {:ok, jsonResp} ->

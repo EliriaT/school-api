@@ -98,7 +98,7 @@ defmodule Course.Client do
   def handle_call({:get_course, id}, _from, conn) do
     request = %Course.CourseID{id: id}
     resp = conn |> Course.CourseService.Stub.get_course(request, timeout: @timeout)
-    IO.inspect(resp)
+
     {:reply, resp, conn}
   end
 end

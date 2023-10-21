@@ -29,7 +29,8 @@ defmodule Gateway.MixProject do
       {:jason, "~> 1.4"},
       {:grpc, "~> 0.7"},
       {:protobuf, "~> 0.11"},
-      {:google_protos, "~> 0.1"}
+      {:google_protos, "~> 0.1"},
+      {:redix, "~> 1.3"},
     ]
   end
 

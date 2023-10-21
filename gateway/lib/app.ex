@@ -22,7 +22,8 @@ defmodule APIGateway do
           %{
             id: Course.Client,
             start: {Course.Client, :start_link, [course_conn]}
-          }
+          },
+          {Redix, host: "localhost", name: :redix, port: 6379},
         ]
 
         opts = [strategy: :one_for_one, name: Gateway.Supervisor]
