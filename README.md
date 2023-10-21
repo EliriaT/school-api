@@ -163,6 +163,9 @@ create users. **Authorization header required**
 
 </details>
 
+
+`– GEY /users/:id` - Get a user by id
+
 * **Schools Administration Service**
 
 `– POST /schools` - Creates a school. Admin only access. 
