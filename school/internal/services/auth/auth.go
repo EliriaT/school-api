@@ -36,6 +36,7 @@ func (s *AuthServer) GetUser(ctx context.Context, req *pb.EntityID) (*pb.UserRes
 	}, nil
 }
 
+// TODO SHULD CHECK ROLE FOR ENUM
 func (s *AuthServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	var user models.User
 

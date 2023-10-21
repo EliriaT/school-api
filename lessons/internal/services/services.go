@@ -31,14 +31,14 @@ func (c *CourseServer) CheckHealth(ctx context.Context, req *pb.HealthRequest) (
 func (c *CourseServer) CreateCourse(ctx context.Context, request *pb.CourseRequest) (*pb.CourseCreateResponse, error) {
 	var course models.Course
 
-	//TODO check class and teacher id with the second microservice
-	//TODO should check role of user
+	//TODO should check role of user so that it is teacher
 	class, err := c.SchoolClient.GetClass(request.ClassId)
 	if err != nil {
 		return &pb.CourseCreateResponse{
 			Status: http.StatusNotFound,
 			Error:  err.Error()}, nil
 	}
+
 	if class.Status != http.StatusOK {
 		return &pb.CourseCreateResponse{
 			Status: http.StatusNotFound,
@@ -51,6 +51,7 @@ func (c *CourseServer) CreateCourse(ctx context.Context, request *pb.CourseReque
 			Status: http.StatusNotFound,
 			Error:  err.Error()}, nil
 	}
+
 	if user.Status != http.StatusOK {
 		return &pb.CourseCreateResponse{
 			Status: http.StatusNotFound,
