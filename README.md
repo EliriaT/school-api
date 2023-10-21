@@ -231,37 +231,6 @@ otherwise the user’s class.
 ```
 </details>
 
-`– POST /semester` - Creates a semester. Access limited to director and manager
-
-<details>
-           <summary>Request Body</summary>
-
-```
-{
-    "name":"Semestru 1",
-    "start_date":"2022-09-11T00:00:00Z",
-    "end_date":"2023-01-10T00:00:00Z"
-}
-```
-
-</details>
-
-<details>
-           <summary>Response Body</summary>
-
-```
-{
-    "id": 1,
-    "name": "Semestru 1",
-    "start_date": "2022-09-11T00:00:00Z",
-    "end_date": "2023-01-10T00:00:00Z",
-    "school_id": 1,
-    "createdAt": "2023-09-27T16:58:24.392629Z",
-    "updatedAt": "0001-01-01T00:00:00Z"
-}
-```
-</details>
-
 * **Lessons Service**
 
 `– POST /course` - Creates a course. Access limited to director and manager
