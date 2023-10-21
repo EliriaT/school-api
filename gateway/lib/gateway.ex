@@ -24,6 +24,107 @@ defmodule Gateway do
     send_resp(conn, 200, "world")
   end
 
+  post "/users" do
+    case conn.body_params do
+      %{
+        "email" => email,
+        "password" => password,
+        "name" => name,
+        "schoolId" => schoolId,
+        "roleId" => roleId
+      } = body ->
+        reply = Auth.Client.register(body)
+
+        case reply do
+          {:error, error} ->
+            send_resp(conn, 500, error)
+
+          {:ok, user} ->
+            jsonResp = Protobuf.JSON.encode(user)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(user.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+        end
+
+      _ ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, '')
+    end
+  end
+
+  post "/users/login" do
+    case conn.body_params do
+      %{
+        "email" => email,
+        "password" => password
+      } = body ->
+        reply = Auth.Client.login(body)
+
+        case reply do
+          {:error, error} ->
+            send_resp(conn, 500, error)
+
+          {:ok, user} ->
+            jsonResp = Protobuf.JSON.encode(user)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(user.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+        end
+
+      _ ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, '')
+    end
+  end
+
+  post "/users/token" do
+    case conn.body_params do
+      %{
+        "token" => token
+      } ->
+        reply = Auth.Client.validate(token)
+
+        case reply do
+          {:error, error} ->
+            send_resp(conn, 500, error)
+
+          {:ok, user} ->
+            jsonResp = Protobuf.JSON.encode(user)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(user.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+        end
+
+      _ ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, '')
+    end
+  end
+
   get "/users/:id" do
     id = String.to_integer(id)
     reply = Auth.Client.get_user(id)
@@ -39,7 +140,7 @@ defmodule Gateway do
           {:ok, jsonResp} ->
             conn
             |> put_resp_content_type("application/json")
-            |> send_resp(200, jsonResp)
+            |> send_resp(user.status, jsonResp)
 
           {:error, _} ->
             send_resp(conn, 500, "json encoding failed")
@@ -50,24 +151,103 @@ defmodule Gateway do
     end
   end
 
-  post "/users" do
-
-  end
-
-  post "/users/login" do
-
-  end
-
-  post "/users/token" do
-
-  end
-
   post "/schools" do
+    case conn.body_params do
+      %{
+        "name" => name
+      } = body ->
+        reply = School.Client.create_school(body)
 
+        case reply do
+          {:error, error} ->
+            send_resp(conn, 500, error)
+
+          {:ok, protoReply} ->
+            jsonResp = Protobuf.JSON.encode(protoReply)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(protoReply.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+        end
+
+      _ ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, '')
+    end
   end
 
   post "/class" do
+    case conn.body_params do
+      %{
+        "headTeacher" => headTeacher,
+        "name" => name,
+        "schoolId" => schoolId
+      } = body ->
+        reply = School.Client.create_class(body)
 
+        case reply do
+          {:error, error} ->
+            send_resp(conn, 500, error)
+
+          {:ok, protoReply} ->
+            jsonResp = Protobuf.JSON.encode(protoReply)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(protoReply.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+        end
+
+      _ ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, '')
+    end
+  end
+
+  post "/student" do
+    case conn.body_params do
+      %{
+        "classID" => classID,
+        "userID" => userID
+      } = body ->
+        reply = School.Client.create_student(body)
+
+        case reply do
+          {:error, error} ->
+            send_resp(conn, 500, error)
+
+          {:ok, protoReply} ->
+            jsonResp = Protobuf.JSON.encode(protoReply)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(protoReply.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+        end
+
+      _ ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, '')
+    end
   end
 
   get "/class/:id" do
@@ -85,7 +265,7 @@ defmodule Gateway do
           {:ok, jsonResp} ->
             conn
             |> put_resp_content_type("application/json")
-            |> send_resp(200, jsonResp)
+            |> send_resp(class.status, jsonResp)
 
           {:error, _} ->
             send_resp(conn, 500, "json encoding failed")
@@ -99,10 +279,40 @@ defmodule Gateway do
   # course service
 
   post "/course" do
+    case conn.body_params do
+      %{
+        "classId" => classId,
+        "name" => name,
+        "teacherId" => teacherId
+      } = body ->
+        reply = Course.Client.create_course(body)
 
+        case reply do
+          {:error, error} ->
+            send_resp(conn, 500, error)
+
+          {:ok, protoReply} ->
+            jsonResp = Protobuf.JSON.encode(protoReply)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(protoReply.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+        end
+
+      _ ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, '')
+    end
   end
 
-  get  "/course/:id" do
+  get "/course/:id" do
     id = String.to_integer(id)
     reply = Course.Client.get_course(id)
 
@@ -110,14 +320,14 @@ defmodule Gateway do
       {:error, error} ->
         send_resp(conn, 500, error)
 
-      {:ok, class} ->
-        jsonResp = Protobuf.JSON.encode(class)
+      {:ok, course} ->
+        jsonResp = Protobuf.JSON.encode(course)
 
         case jsonResp do
           {:ok, jsonResp} ->
             conn
             |> put_resp_content_type("application/json")
-            |> send_resp(200, jsonResp)
+            |> send_resp(course.status, jsonResp)
 
           {:error, _} ->
             send_resp(conn, 500, "json encoding failed")
@@ -128,14 +338,78 @@ defmodule Gateway do
     end
   end
 
-  post  "/lesson" do
+  post "/lesson" do
+    case conn.body_params do
+      %{
+        "classRoom" => classRoom,
+        "courseId" => courseId,
+        "startHour" => startHour,
+        "endHour" => endHour,
+        "name" => name,
+        "weekDay" => weekDay
+      } = body ->
+        reply = Course.Client.create_lesson(body)
 
+        case reply do
+          {:error, error} ->
+            send_resp(conn, 500, error)
+
+          {:ok, protoReply} ->
+            jsonResp = Protobuf.JSON.encode(protoReply)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(protoReply.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+        end
+
+      _ ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, '')
+    end
   end
 
-  post  "/mark" do
+  post "/mark" do
+    case conn.body_params do
+      %{
+        "courseId" => courseId,
+        "isAbsent" => isAbsent,
+        "mark" => mark,
+        "markDate" => markDate,
+        "studentId" => studentId
+      } = body ->
+        reply = Course.Client.create_mark(body)
 
+        case reply do
+          {:error, error} ->
+            send_resp(conn, 500, error)
+
+          {:ok, protoReply} ->
+            jsonResp = Protobuf.JSON.encode(protoReply)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(protoReply.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+        end
+
+      _ ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, '')
+    end
   end
-
 
   match _ do
     conn

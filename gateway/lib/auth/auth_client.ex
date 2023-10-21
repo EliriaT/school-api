@@ -23,7 +23,7 @@ defmodule Auth.Client do
   end
 
   def register(registerReq) do
-    GenServer.call(__MODULE__, {:login, registerReq})
+    GenServer.call(__MODULE__, {:register, registerReq})
   end
 
   def handle_call({:get_user, id}, _from, conn) do
@@ -55,8 +55,8 @@ defmodule Auth.Client do
       email: email,
       password: password,
       name: name,
-      schoolId: schoolId,
-      roleId: roleId
+      schoolId: String.to_integer(schoolId),
+      roleId: String.to_integer(roleId)
     }
 
     resp = conn |> Auth.AuthService.Stub.register(request)
