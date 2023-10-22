@@ -6,6 +6,7 @@ import (
 	"github.com/EliriaT/school-api/course/pkg/client"
 	"github.com/EliriaT/school-api/course/pkg/models"
 	"github.com/EliriaT/school-api/course/pkg/pb"
+	"log"
 	"net/http"
 )
 
@@ -25,6 +26,7 @@ func (c *CourseServer) CheckHealth(ctx context.Context, req *pb.HealthRequest) (
 	if err != nil {
 		return &pb.HealthResponse{Healthy: false}, nil
 	}
+	log.Println("Ping received")
 	return &pb.HealthResponse{Healthy: true}, nil
 }
 

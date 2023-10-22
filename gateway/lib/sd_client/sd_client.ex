@@ -7,20 +7,22 @@ defmodule SDClient do
   end
 
   def init([]) do
-    {:ok, socket} = :gen_tcp.connect('localhost', 4040, [:binary, packet: 0, active: false, reuseaddr: true])
+    {:ok, socket} =
+      :gen_tcp.connect('localhost', 4040, [:binary, packet: 0, active: false, reuseaddr: true])
+
     Logger.info("Gateway connected to service discovery")
     {:ok, socket}
   end
 
   def getReplicas(type) do
-    GenServer.call(__MODULE__, {:get_replicas, type})
+    GenServer.call(__MODULE__, {:get_replicas, type}, 10000)
   end
 
   def loadBalanceService(type) do
-    GenServer.call(__MODULE__, {:load_balance, type})
+    GenServer.call(__MODULE__, {:load_balance, type}, 10000)
   end
 
-  def getProcessPid(type,address) do
+  def getProcessPid(type, address) do
     case Registry.lookup(PidRegistry, "#{type}:#{address}") do
       [] ->
         false
