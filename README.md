@@ -222,6 +222,8 @@ create users. **Authorization header required**
 ```
 </details>
 
+`- POST -/student` - Create a student
+
 * **Lessons Service**
 
 `– POST /course` - Creates a course. Access limited to director and manager
