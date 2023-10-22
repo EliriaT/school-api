@@ -67,7 +67,20 @@ defmodule ETSRegistry do
         [{_key, old_list}] -> old_list
       end
 
-    service = if Enum.empty?(userList), do: "", else: Enum.random(userList)
+    service =
+      if Enum.empty?(userList) do
+        ""
+      else
+        [h | t] = userList
+
+        :ets.insert(
+          ets_table,
+          {type, t ++ [h]}
+        )
+
+        h
+      end
+
     {:reply, service, ets_table}
   end
 
