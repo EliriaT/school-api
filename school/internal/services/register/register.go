@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"time"
 )
 
 type RegisterRequest struct {
@@ -36,6 +37,8 @@ func NewSvcDiscoveryClient(SDUrl string) (*SvcDiscoveryClient, error) {
 		fmt.Println("Error connecting:", err)
 		return nil, err
 	}
+
+	conn.SetDeadline(time.Time{})
 
 	return &SvcDiscoveryClient{
 		SDUrl: SDUrl,

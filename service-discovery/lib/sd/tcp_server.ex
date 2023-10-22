@@ -25,22 +25,10 @@ defmodule TCPServer do
         SvcRegistry.serveLoop(client)
       end)
 
-    # # this ensures that messages will be send to process pid, but not to the actor that accepted the socket connection. Also ensures that the acceptor
-    # # will not bring down the clients on crash. Sockets are not tied to the process that accepted them
-    # # if the tcp acceptor server crashes, the connections are not crashed
-    # # if connection pid crashes, acceptor does not crashes
     :ok = :gen_tcp.controlling_process(client, pid)
 
     loop_acceptor(socket)
   end
-
-  # defp serve(socket) do
-  #   socket
-  #   |> read_line()
-  #   |> write_line(socket)
-
-  #   serve(socket)
-  # end
 
   def read_line(socket) do
     case :gen_tcp.recv(socket, 0) do
