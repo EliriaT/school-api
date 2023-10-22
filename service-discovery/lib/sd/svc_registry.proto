@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package svc_registry;
+
+service RegistryService {
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
+  rpc GetReplicas(ReplicaRequest) returns (ReplicaResponse) {}
+  rpc GetService(ServiceRequest) returns (ServiceResponse) {}
+}
+
+message RegisterRequest {
+  string type = 1;
+  string address = 2;
+}
+
+message RegisterResponse {
+  int64 status = 1;
+  string error = 2;
+}
+
+message ReplicaRequest {
+  string type = 1;
+}
+
+message ReplicaResponse {
+  int64 status = 1;
+  string error = 2;
+  repeated Service service = 3;
+}
+
+message ServiceRequest {
+  string type = 1;
+}
+
+message ServiceResponse {
+  int64 status = 1;
+  string error = 2;
+  Service data = 3;
+}
+
+message Service{
+  string type = 1;
+  string address = 2;
+}
