@@ -685,6 +685,23 @@ defmodule Gateway do
     end
   end
 
+  get "/health" do
+    # check if each service has a connection and then return 200
+
+    %{"replicas" => schoolServices, "status" => status} = SDClient.getReplicas("school")
+    %{"replicas" => courseServices, "status" => status} = SDClient.getReplicas("course")
+
+    status = if Enum.empty?(schoolServices) || Enum.empty?(courseServices), do: 503, else: 200
+
+    body = %{"schoolReplicas" => schoolServices, "courseReplicas" => courseServices}
+
+    reply = Jason.encode!(body)
+
+    conn
+    |> put_resp_content_type("application/json")
+    |> send_resp(status, reply)
+  end
+
   match _ do
     conn
     |> put_resp_content_type("application/json")
