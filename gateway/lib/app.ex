@@ -3,9 +3,10 @@ defmodule APIGateway do
   require Logger
 
   def start(_type, _args) do
-
     childrenSD = [{SDClient, []}]
     {:ok, pid} = Supervisor.start_link(childrenSD, strategy: :one_for_one)
+
+    {:ok, _} = Registry.start_link(keys: :unique, name: PidRegistry)
 
     %{"replicas" => schoolServices, "status" => status} = SDClient.getReplicas("school")
     %{"replicas" => courseServices, "status" => status} = SDClient.getReplicas("course")
@@ -14,18 +15,20 @@ defmodule APIGateway do
       Enum.reduce(schoolServices, [], fn address, acc ->
         {:ok, auth_conn} = GRPC.Stub.connect(address)
         Logger.info("Gateway connected to Auth Service at #{address}")
+        authName = UUID.uuid1()
 
         {:ok, school_conn} = GRPC.Stub.connect(address)
         Logger.info("Gateway connected to School Service at #{address}")
+        schoolName = UUID.uuid1()
 
         [
           %{
-            id: UUID.uuid1(),
-            start: {Auth.Client, :start_link, [auth_conn]}
+            id: authName,
+            start: {Auth.Client, :start_link, [auth_conn, "auth:#{address}"]}
           },
           %{
-            id: UUID.uuid1(),
-            start: {School.Client, :start_link, [school_conn]}
+            id: schoolName,
+            start: {School.Client, :start_link, [school_conn, "school:#{address}"]}
           }
           | acc
         ]
@@ -35,11 +38,12 @@ defmodule APIGateway do
       Enum.reduce(courseServices, children, fn address, acc ->
         {:ok, course_conn} = GRPC.Stub.connect(address)
         Logger.info("Gateway connected to Course Service at #{address}")
+        courseName = UUID.uuid1()
 
         [
           %{
-            id: UUID.uuid1(),
-            start: {Course.Client, :start_link, [course_conn]}
+            id: courseName,
+            start: {Course.Client, :start_link, [course_conn, "course:#{address}"]}
           }
           | acc
         ]
@@ -55,5 +59,4 @@ defmodule APIGateway do
     Logger.info("Gateway started.")
     Supervisor.start_link(children, opts)
   end
-  
 end

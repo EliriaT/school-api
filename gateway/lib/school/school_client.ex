@@ -5,28 +5,29 @@ defmodule School.Client do
   @timeout 4000
   @gen_server_timeout 10000
 
-  def start_link(conn) do
-    GenServer.start_link(__MODULE__, conn, name: __MODULE__)
+  def start_link(conn, uuidName) do
+    name = {:via, Registry, {PidRegistry, uuidName}}
+    GenServer.start_link(__MODULE__, conn, name: name)
   end
 
   def init(conn) do
     {:ok, conn}
   end
 
-  def get_class(id) do
-    GenServer.call(__MODULE__, {:get_class, id},  @gen_server_timeout)
+  def get_class(pid,id) do
+    GenServer.call(pid, {:get_class, id},  @gen_server_timeout)
   end
 
-  def create_school(body) do
-    GenServer.call(__MODULE__, {:create_school, body}, @gen_server_timeout)
+  def create_school(pid,body) do
+    GenServer.call(pid, {:create_school, body}, @gen_server_timeout)
   end
 
-  def create_class(body) do
-    GenServer.call(__MODULE__, {:create_class, body},  @gen_server_timeout)
+  def create_class(pid,body) do
+    GenServer.call(pid, {:create_class, body},  @gen_server_timeout)
   end
 
-  def create_student(body) do
-    GenServer.call(__MODULE__, {:create_student, body}, @gen_server_timeout)
+  def create_student(pid,body) do
+    GenServer.call(pid, {:create_student, body}, @gen_server_timeout)
   end
 
   def handle_call({:get_class, id}, _from, conn) do

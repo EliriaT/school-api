@@ -6,28 +6,29 @@ defmodule Auth.Client do
 
   @gen_server_timeout 10000
 
-  def start_link(conn) do
-    GenServer.start_link(__MODULE__, conn, name: __MODULE__)
+  def start_link(conn, uuidName) do
+    name = {:via, Registry, {PidRegistry, uuidName}}
+    GenServer.start_link(__MODULE__, conn, name: name)
   end
 
   def init(conn) do
     {:ok, conn}
   end
 
-  def get_user(id) do
-    GenServer.call(__MODULE__, {:get_user, id}, @gen_server_timeout)
+  def get_user(pid, id) do
+    GenServer.call(pid, {:get_user, id}, @gen_server_timeout)
   end
 
-  def validate(token) do
-    GenServer.call(__MODULE__, {:token_check, token}, @gen_server_timeout)
+  def validate(pid,token) do
+    GenServer.call(pid, {:token_check, token}, @gen_server_timeout)
   end
 
-  def login(loginReq) do
-    GenServer.call(__MODULE__, {:login, loginReq}, @gen_server_timeout)
+  def login(pid,loginReq) do
+    GenServer.call(pid, {:login, loginReq}, @gen_server_timeout)
   end
 
-  def register(registerReq) do
-    GenServer.call(__MODULE__, {:register, registerReq}, @gen_server_timeout)
+  def register(pid,registerReq) do
+    GenServer.call(pid, {:register, registerReq}, @gen_server_timeout)
   end
 
   def handle_call({:get_user, id}, _from, conn) do

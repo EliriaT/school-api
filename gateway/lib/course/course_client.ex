@@ -5,28 +5,29 @@ defmodule Course.Client do
   @timeout 4000
   @gen_server_timeout 10000
 
-  def start_link(conn) do
-    GenServer.start_link(__MODULE__, conn, name: __MODULE__)
+  def start_link(conn, uuidName) do
+    name = {:via, Registry, {PidRegistry, uuidName}}
+    GenServer.start_link(__MODULE__, conn, name: name)
   end
 
   def init(conn) do
     {:ok, conn}
   end
 
-  def create_course(body) do
-    GenServer.call(__MODULE__, {:create_course, body},  @gen_server_timeout)
+  def create_course(pid,body) do
+    GenServer.call(pid, {:create_course, body},  @gen_server_timeout)
   end
 
-  def create_lesson(body) do
-    GenServer.call(__MODULE__, {:create_lesson, body},  @gen_server_timeout)
+  def create_lesson(pid,body) do
+    GenServer.call(pid, {:create_lesson, body},  @gen_server_timeout)
   end
 
-  def create_mark(body) do
-    GenServer.call(__MODULE__, {:create_mark, body}, @gen_server_timeout)
+  def create_mark(pid,body) do
+    GenServer.call(pid, {:create_mark, body}, @gen_server_timeout)
   end
 
-  def get_course(id) do
-    GenServer.call(__MODULE__, {:get_course, id}, @gen_server_timeout)
+  def get_course(pid,id) do
+    GenServer.call(pid, {:get_course, id}, @gen_server_timeout)
   end
 
   def handle_call(

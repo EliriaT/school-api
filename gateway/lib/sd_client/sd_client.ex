@@ -20,6 +20,16 @@ defmodule SDClient do
     GenServer.call(__MODULE__, {:load_balance, type})
   end
 
+  def getProcessPid(type,address) do
+    case Registry.lookup(PidRegistry, "#{type}:#{address}") do
+      [] ->
+        false
+
+      [{pid, _value}] ->
+        pid
+    end
+  end
+
   def handle_call({:get_replicas, type}, _from, socket) do
     request = %{"replicas_type" => type}
 
