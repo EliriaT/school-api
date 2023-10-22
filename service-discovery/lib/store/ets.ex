@@ -1,5 +1,6 @@
 defmodule ETSRegistry do
   use GenServer
+  require Logger
 
   @time 1000
 
@@ -43,6 +44,8 @@ defmodule ETSRegistry do
          address | replicaList
        ]}
     )
+
+    Logger.info("Service #{type} located at #{address} succesfully registered. ")
 
     {:noreply, ets_table}
   end

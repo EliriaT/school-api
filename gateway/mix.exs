@@ -31,6 +31,7 @@ defmodule Gateway.MixProject do
       {:protobuf, "~> 0.11"},
       {:google_protos, "~> 0.1"},
       {:redix, "~> 1.3"},
+      {:uuid, "~> 1.1"},
     ]
   end
 
