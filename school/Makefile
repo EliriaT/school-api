@@ -26,3 +26,9 @@ dropdb:
 
 test:
 	go test -v -cover ./...
+
+dockerImage:
+	docker build -t school-service .
+
+dockerContainer:
+	docker run  -p 8081:8081 --name school-service school-service

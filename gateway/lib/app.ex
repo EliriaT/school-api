@@ -3,8 +3,23 @@ defmodule APIGateway do
   require Logger
 
   def start(_type, _args) do
+    redisDomain = System.get_env("REDIS", "localhost")
+    redisPort =System.get_env("REDIS_PORT", "6379")
+    redisPort = String.to_integer(redisPort)
+    IO.inspect(redisDomain)
+    IO.inspect(redisPort)
+
     childrenSD = [{SDClient, []}]
-    {:ok, pid} = Supervisor.start_link(childrenSD, strategy: :one_for_one)
+
+    case Supervisor.start_link(childrenSD, strategy: :one_for_one) do
+      {:ok, pid} ->
+        pid
+
+      {:error, error} ->
+        Logger.info("Could not connect to service discovery")
+        IO.inspect(error)
+        Process.exit(self(), :shutdown)
+    end
 
     {:ok, _} = Registry.start_link(keys: :unique, name: PidRegistry)
 
@@ -51,12 +66,21 @@ defmodule APIGateway do
 
     children = [
       {Plug.Cowboy, scheme: :http, plug: Gateway, options: [port: 8080]},
-      {Redix, host: "localhost", name: :redix, port: 6379}
+      {Redix, host: redisDomain, name: :redix, port: redisPort},
+      {DynamicSupervisor, strategy: :one_for_one, name: DynamicServices.Supervisor}
       | children
     ]
 
     opts = [strategy: :one_for_one, name: Gateway.Supervisor]
     Logger.info("Gateway started.")
     Supervisor.start_link(children, opts)
+  end
+
+  def main(_args \\ []) do
+    # start({}, {})
+
+    receive do
+      _ -> IO.inspect("Hi")
+    end
   end
 end

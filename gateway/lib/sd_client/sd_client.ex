@@ -7,8 +7,13 @@ defmodule SDClient do
   end
 
   def init([]) do
+    domain = System.get_env("SD_DOMAIN", "localhost")
+    port = System.get_env("SD_PORT", "4040")
+    domain = String.to_charlist(domain)
+    port = String.to_integer(port)
+
     {:ok, socket} =
-      :gen_tcp.connect('localhost', 4040, [:binary, packet: 0, active: false, reuseaddr: true])
+      :gen_tcp.connect(domain, port, [:binary, packet: 0, active: false, reuseaddr: true])
 
     Logger.info("Gateway connected to service discovery")
     {:ok, socket}
@@ -24,8 +29,44 @@ defmodule SDClient do
 
   def getProcessPid(type, address) do
     case Registry.lookup(PidRegistry, "#{type}:#{address}") do
+      #  in case there is no grpc client for that addres, then create dinamically a new one!
       [] ->
-        false
+        child =
+          cond do
+            type == "school" ->
+              schoolName = UUID.uuid1()
+              {:ok, school_conn} = GRPC.Stub.connect(address)
+              Logger.info("Gateway connected to School Service at #{address}")
+
+              %{
+                id: schoolName,
+                start: {School.Client, :start_link, [school_conn, "school:#{address}"]}
+              }
+
+            type == "course" ->
+              courseName = UUID.uuid1()
+              {:ok, course_conn} = GRPC.Stub.connect(address)
+              Logger.info("Gateway connected to Course Service at #{address}")
+
+              %{
+                id: courseName,
+                start: {Course.Client, :start_link, [course_conn, "course:#{address}"]}
+              }
+
+            type == "auth" ->
+              authName = UUID.uuid1()
+              {:ok, auth_conn} = GRPC.Stub.connect(address)
+              Logger.info("Gateway connected to Auth Service at #{address}")
+
+              %{
+                id: authName,
+                start: {Auth.Client, :start_link, [auth_conn, "auth:#{address}"]}
+              }
+          end
+
+        {:ok, clientPid} = DynamicSupervisor.start_child(DynamicServices.Supervisor, child)
+
+        clientPid
 
       [{pid, _value}] ->
         pid

@@ -16,4 +16,11 @@ defmodule ServiceDiscovery do
     Supervisor.start_link(children, opts)
   end
 
+  def main(_args \\ []) do
+    # start({}, {})
+
+    receive do
+      _ -> IO.inspect("Hi")
+    end
+  end
 end

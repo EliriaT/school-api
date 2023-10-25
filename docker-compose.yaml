@@ -1,0 +1,87 @@
+version: "3.9"
+networks:
+  school-network:
+    external: true
+services:
+  postgres12:
+    image: postgres:12-alpine
+    container_name: postgres12
+    networks:
+      - school-network
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=school
+  school-service:
+    image: school-service
+    build:
+      context: .
+      dockerfile: /school/Dockerfile
+    container_name: school-service
+    networks:
+      - school-network
+    environment:
+      - DB_URL=postgresql://root:secret@postgres12:5432/school?sslmode=disable
+      - SD_URL=service-discovery:4040
+      - MY_URL=school-service:8081
+    depends_on:
+      - postgres12
+      - service-discovery
+    restart: always
+    ports:
+      - "8081:8081"
+    expose:
+      - "8081"
+    entrypoint:
+      [
+        "/school/wait-for.sh",
+        "postgres12:5432",
+        "--",
+        "/school/main"
+      ]
+  gateway:
+    image: gateway
+    build:
+      context: .
+      dockerfile: /gateway/Dockerfile
+    container_name: gateway
+    networks:
+      - school-network
+    environment:
+      MIX_ENV: dev
+      SD_DOMAIN: service-discovery
+      SD_PORT: 4040
+      REDIS: redis
+      REDIS_PORT: 6379
+    depends_on:
+      - school-service
+      - service-discovery
+    restart: always
+    ports:
+      - "8080:8080"
+    expose:
+      - "8080"
+
+  service-discovery:
+    image: service-discovery
+    build:
+      context: .
+      dockerfile: /service-discovery/Dockerfile
+    container_name: service-discovery
+    networks:
+      - school-network
+    environment:
+      MIX_ENV: dev
+    restart: always
+    ports:
+      - "4040:4040"
+    expose:
+      - "4040"
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    networks:
+      - school-network
+    ports:
+      - "6378:6379"
