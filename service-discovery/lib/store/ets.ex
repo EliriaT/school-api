@@ -86,6 +86,7 @@ defmodule ETSRegistry do
 
         h
       end
+      Logger.info("Forwarding to service #{type} at #{service}.")
 
     {:reply, service, ets_table}
   end

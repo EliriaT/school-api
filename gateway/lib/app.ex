@@ -6,8 +6,6 @@ defmodule APIGateway do
     redisDomain = System.get_env("REDIS", "localhost")
     redisPort =System.get_env("REDIS_PORT", "6379")
     redisPort = String.to_integer(redisPort)
-    IO.inspect(redisDomain)
-    IO.inspect(redisPort)
 
     childrenSD = [{SDClient, []}]
 

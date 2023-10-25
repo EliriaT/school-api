@@ -26,6 +26,7 @@ services:
       - SD_URL=service-discovery:4040
       - MY_URL=course-service:8082
       - SCHOOL_URL=school-service:8081
+      - PORT=:8082
     depends_on:
       - postgres123
       - service-discovery
@@ -38,6 +39,37 @@ services:
       [
         "/course/wait-for.sh",
         "postgres123:5432",
+        "--",
+        "/course/main"
+      ]
+
+  course-service2:
+    image: course-service
+    build:
+      context: .
+      dockerfile: /course/Dockerfile
+    container_name: course-service2
+    networks:
+      - school-network
+    environment:
+      - DB_URL=postgresql://root:secret@postgres123:5432/lessons?sslmode=disable
+      - SD_URL=service-discovery:4040
+      - MY_URL=course-service2:8084
+      - SCHOOL_URL=school-service:8081
+      - PORT=:8084
+    depends_on:
+      - postgres123
+      - service-discovery
+      - course-service
+    restart: always
+    ports:
+      - "8084:8084"
+    expose:
+      - "8084"
+    entrypoint:
+      [
+        "/course/wait-for.sh",
+        "course-service:8082",
         "--",
         "/course/main"
       ]
@@ -64,6 +96,7 @@ services:
       - DB_URL=postgresql://root:secret@postgres12:5432/school?sslmode=disable
       - SD_URL=service-discovery:4040
       - MY_URL=school-service:8081
+      - PORT=:8081
     depends_on:
       - postgres12
       - service-discovery
@@ -76,6 +109,36 @@ services:
       [
         "/school/wait-for.sh",
         "postgres12:5432",
+        "--",
+        "/school/main"
+      ]
+
+  school-service2:
+    image: school-service
+    build:
+      context: .
+      dockerfile: /school/Dockerfile
+    container_name: school-service2
+    networks:
+      - school-network
+    environment:
+      - DB_URL=postgresql://root:secret@postgres12:5432/school?sslmode=disable
+      - SD_URL=service-discovery:4040
+      - MY_URL=school-service2:8086
+      - PORT=:8086
+    depends_on:
+      - postgres12
+      - service-discovery
+      - school-service
+    restart: always
+    ports:
+      - "8086:8086"
+    expose:
+      - "8086"
+    entrypoint:
+      [
+        "/school/wait-for.sh",
+        "school-service:8081",
         "--",
         "/school/main"
       ]
@@ -98,6 +161,8 @@ services:
       - school-service
       - course-service
       - service-discovery
+      - course-service2
+      - school-service2
     restart: always
     ports:
       - "8080:8080"
