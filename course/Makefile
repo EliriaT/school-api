@@ -26,3 +26,9 @@ dropdb:
 
 test:
 	go test -v -cover ./...
+
+dockerImage:
+	docker build -t course-service .
+
+dockerContainer:
+	docker run  -p 8082:8082 --name course-service course-service

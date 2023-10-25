@@ -3,6 +3,45 @@ networks:
   school-network:
     external: true
 services:
+  postgres123:
+    image: postgres:12-alpine
+    container_name: postgres123
+    networks:
+      - school-network
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=lessons
+
+  course-service:
+    image: course-service
+    build:
+      context: .
+      dockerfile: /course/Dockerfile
+    container_name: course-service
+    networks:
+      - school-network
+    environment:
+      - DB_URL=postgresql://root:secret@postgres123:5432/lessons?sslmode=disable
+      - SD_URL=service-discovery:4040
+      - MY_URL=course-service:8082
+      - SCHOOL_URL=school-service:8081
+    depends_on:
+      - postgres123
+      - service-discovery
+    restart: always
+    ports:
+      - "8082:8082"
+    expose:
+      - "8082"
+    entrypoint:
+      [
+        "/course/wait-for.sh",
+        "postgres123:5432",
+        "--",
+        "/course/main"
+      ]
+
   postgres12:
     image: postgres:12-alpine
     container_name: postgres12
@@ -12,6 +51,7 @@ services:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=secret
       - POSTGRES_DB=school
+
   school-service:
     image: school-service
     build:
@@ -39,6 +79,7 @@ services:
         "--",
         "/school/main"
       ]
+
   gateway:
     image: gateway
     build:
@@ -55,6 +96,7 @@ services:
       REDIS_PORT: 6379
     depends_on:
       - school-service
+      - course-service
       - service-discovery
     restart: always
     ports:
