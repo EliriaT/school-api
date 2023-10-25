@@ -7,7 +7,9 @@ defmodule ETSRegistry do
   @timeout 10000
 
   def start_link(_) do
-    GenServer.start_link(__MODULE__, :ets.new(:registry, [:set, :public, :named_table]), name: __MODULE__)
+    GenServer.start_link(__MODULE__, :ets.new(:registry, [:set, :public, :named_table]),
+      name: __MODULE__
+    )
   end
 
   def init(ets_table) do
@@ -25,7 +27,7 @@ defmodule ETSRegistry do
   end
 
   def getReplicas(type) do
-    GenServer.call(__MODULE__, {:get_replicas, type},@timeout)
+    GenServer.call(__MODULE__, {:get_replicas, type}, @timeout)
   end
 
   def loadBalanceService(type) do
@@ -39,13 +41,15 @@ defmodule ETSRegistry do
         [{_key, old_list}] -> old_list
       end
 
-    :ets.insert(
-      ets_table,
-      {type,
-       [
-         address | replicaList
-       ]}
-    )
+    if !Enum.member?(replicaList, address) do
+      :ets.insert(
+        ets_table,
+        {type,
+         [
+           address | replicaList
+         ]}
+      )
+    end
 
     Logger.info("Service #{type} located at #{address} succesfully registered. ")
 
