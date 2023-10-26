@@ -1,6 +1,9 @@
 # PAD Lab1
 A microservices based API for a school management app, an LMS (Learning Management Systems)
 
+### Build the project
+
+`docker compose up`
 
 ### Assess Application Suitability. 
 
