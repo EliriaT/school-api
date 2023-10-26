@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+var (
+	ErrInvalidToken    = errors.New("token is invalid")
+	ErrExpiredToken    = errors.New("token has expired")
+	ErrGeneratingToken = errors.New("token could not be signed")
+)
+
 type JwtWrapper struct {
 	SecretKey       string
 	Issuer          string
@@ -39,7 +45,7 @@ func (w *JwtWrapper) GenerateToken(user models.User) (signedToken string, err er
 	signedToken, err = token.SignedString([]byte(w.SecretKey))
 
 	if err != nil {
-		return "", err
+		return "", ErrGeneratingToken
 	}
 
 	return signedToken, nil
@@ -55,17 +61,22 @@ func (w *JwtWrapper) ValidateToken(signedToken string) (claims *jwtClaims, err e
 	)
 
 	if err != nil {
-		return
+		if ve, ok := err.(*jwt.ValidationError); ok {
+			if ve.Errors&jwt.ValidationErrorExpired != 0 {
+				return nil, ErrExpiredToken
+			}
+		}
+		return nil, ErrInvalidToken
 	}
 
 	claims, ok := token.Claims.(*jwtClaims)
 
 	if !ok {
-		return nil, errors.New("Couldn't parse claims")
+		return nil, ErrInvalidToken
 	}
 
 	if claims.ExpiresAt < time.Now().Local().Unix() {
-		return nil, errors.New("JWT is expired")
+		return nil, ErrExpiredToken
 	}
 
 	return claims, nil

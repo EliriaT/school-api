@@ -15,7 +15,7 @@ import (
 func main() {
 	config, err := config.LoadConfig()
 	if err != nil {
-		log.Fatalf("Could not log config", err)
+		log.Fatalf("Could not log config %v", err)
 	}
 	handler := db.Init(config.DBUrl)
 	jwt := auth.JwtWrapper{
@@ -26,7 +26,7 @@ func main() {
 
 	listener, err := net.Listen("tcp", config.Port)
 	if err != nil {
-		log.Fatalf("Could not open tcp connection for service", err)
+		log.Fatalf("Could not open tcp connection for service  %v", err)
 	}
 
 	log.Println("School service started")
@@ -41,17 +41,17 @@ func main() {
 
 	sdClient, err := register.NewSvcDiscoveryClient(config.SDUrl)
 	if err != nil {
-		log.Fatalf("Could not create service discovery client", err)
+		log.Fatalf("Could not create service discovery client  %v", err)
 	}
 
 	err = sdClient.Register(config.ServiceType, config.MyUrl)
 	if err != nil {
-		log.Fatalf("Could not register to service discovery", err)
+		log.Fatalf("Could not register to service discovery  %v", err)
 	}
 
 	log.Printf("School service %s registered to Service Discovery", config.MyUrl)
 
 	if err := grpcServer.Serve(listener); err != nil {
-		log.Fatalln("Failed to accept conn:", err)
+		log.Fatalf("Failed to accept conn:  %v", err)
 	}
 }
