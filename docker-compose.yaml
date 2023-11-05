@@ -14,10 +14,10 @@ services:
       - POSTGRES_DB=lessons
 
   course-service:
-    image: course-service
+    image: eliriat/course-service
     build:
-      context: .
-      dockerfile: /course/Dockerfile
+      context: ./course
+      dockerfile: ./Dockerfile
     container_name: course-service
     networks:
       - school-network
@@ -44,10 +44,10 @@ services:
       ]
 
   course-service2:
-    image: course-service
+    image: eliriat/course-service
     build:
-      context: .
-      dockerfile: /course/Dockerfile
+      context: ./course
+      dockerfile: ./Dockerfile
     container_name: course-service2
     networks:
       - school-network
@@ -85,10 +85,10 @@ services:
       - POSTGRES_DB=school
 
   school-service:
-    image: school-service
+    image: eliriat/school-service
     build:
-      context: .
-      dockerfile: /school/Dockerfile
+      context: ./school
+      dockerfile: ./Dockerfile
     container_name: school-service
     networks:
       - school-network
@@ -114,10 +114,10 @@ services:
       ]
 
   school-service2:
-    image: school-service
+    image: eliriat/school-service
     build:
-      context: .
-      dockerfile: /school/Dockerfile
+      context: ./school
+      dockerfile: ./Dockerfile
     container_name: school-service2
     networks:
       - school-network
@@ -144,10 +144,10 @@ services:
       ]
 
   gateway:
-    image: gateway
+    image: eliriat/gateway
     build:
-      context: .
-      dockerfile: /gateway/Dockerfile
+      context: ./gateway
+      dockerfile: ./Dockerfile
     container_name: gateway
     networks:
       - school-network
@@ -170,10 +170,10 @@ services:
       - "8080"
 
   service-discovery:
-    image: service-discovery
+    image: eliriat/service-discovery
     build:
-      context: .
-      dockerfile: /service-discovery/Dockerfile
+      context: ./service-discovery
+      dockerfile: ./Dockerfile
     container_name: service-discovery
     networks:
       - school-network
