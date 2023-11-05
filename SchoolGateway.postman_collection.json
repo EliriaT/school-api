@@ -36,7 +36,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"irina7@gmail.com\",\n    \"name\": \"irina\",\n    \"password\": \"1234\",\n    \"roleId\": \"10\",\n    \"schoolId\": \"1\"\n}",
+							"raw": "{\n    \"email\": \"irina3@gmail.com\",\n    \"name\": \"irina\",\n    \"password\": \"1234\",\n    \"roleId\": \"10\",\n    \"schoolId\": \"1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -93,7 +93,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"irina6@gmail.com\",\n    \"password\": \"1234\"\n}",
+							"raw": "{\n    \"email\": \"irina7@gmail.com\",\n    \"password\": \"1234\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -126,7 +126,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/class/3",
+							"raw": "http://localhost:8080/class/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -134,7 +134,7 @@
 							"port": "8080",
 							"path": [
 								"class",
-								"3"
+								"1"
 							]
 						}
 					},
@@ -176,7 +176,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"headTeacher\": \"4\",\n    \"name\": \"clasa2\",\n    \"schoolId\": \"2\"\n}",
+							"raw": "{\n    \"headTeacher\": \"1\",\n    \"name\": \"clasa2\",\n    \"schoolId\": \"2\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -204,7 +204,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"irina6@gmail.com\",\n    \"password\": \"1234\"\n}",
+							"raw": "{\n    \"userID\": \"1\",\n    \"classID\": \"3\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -212,15 +212,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/users/login",
+							"raw": "http://localhost:8080/student",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
-								"users",
-								"login"
+								"student"
 							]
 						}
 					},
@@ -258,7 +257,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"classId\": \"3\",\n    \"name\": \"laboris in ut\",\n    \"teacherId\": \"4\"\n}",
+							"raw": "{\n    \"classId\": \"3\",\n    \"name\": \"laboris in ut\",\n    \"teacherId\": \"1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -362,7 +361,18 @@
 			"name": "Check health",
 			"request": {
 				"method": "GET",
-				"header": []
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"health"
+					]
+				}
 			},
 			"response": []
 		}
