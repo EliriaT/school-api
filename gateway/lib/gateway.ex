@@ -5,6 +5,7 @@
 
 defmodule Gateway do
   use Plug.Router
+  require Logger
 
   plug(Plug.Logger)
 
@@ -518,6 +519,7 @@ defmodule Gateway do
   get "/course/:id" do
     case Redix.command(:redix, ["GET", "course" <> id]) do
       {:ok, nil} ->
+        Logger.info("No course data found in cache")
         id = String.to_integer(id)
 
         serviceType = "course"
@@ -569,6 +571,7 @@ defmodule Gateway do
         end
 
       {:ok, body} ->
+        Logger.info("Received from cache course info")
         {:ok, respMap} = Protobuf.JSON.decode(body, Course.CourseResponse)
 
         conn
@@ -659,6 +662,7 @@ defmodule Gateway do
 
               {:ok, protoReply} ->
                 jsonResp = Protobuf.JSON.encode(protoReply)
+                Logger.info("Removing info of course #{courseId} from cache")
                 Redix.command(:redix, ["DEL", "course" <> courseId])
 
                 case jsonResp do
