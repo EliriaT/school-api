@@ -3,7 +3,40 @@ A microservices based API for a school management app, an LMS (Learning Manageme
 
 ### Build the project
 
+You can build each image separately:
+
+`docker build -t school-service .`
+
+`docker build -t course-service .`
+
+`docker build -t gateway .`
+
+`docker build -t service-discovery .`
+
+or:
+
+`docker-compose build`
+
+or pull the remote images:
+
+`docker-compose pull`
+
+Then just run:
+
 `docker compose up`
+
+### Steps for accessing endpoints
+1. All the endpoints of the gateway are accesible at http://localhost:8080 .
+2. Firstly a school has to be created at POST /schools
+2. Then a user can be registered at POST /users. For now there is no restriction for role id, but in future it must exist
+3. Once there exist a user and  a school, a class can be created at POST /class. headTeacher field must be ID of an existing user. Similarly for schoolId
+4. To create a student, you must assign a user to a class at POST /student. In future only users with student role will be able to be assigned to a class
+5. Once a class exists, multiple courses for that class can be created. The teacher who teaches the class is specified at teacherId field. In future only users with teacher role will be able to be assigned to a course.
+6. To create several lesson at a specific day of week and with a start time and end time, access the POST /lesson endpoint
+7. To create a mark for a course and assigned to a student, access the POST /mark endpoint
+8. Other useful endpoints: GET course/:id , GET class/:id , GET users/:id , GET /health
+
+
 
 ### Assess Application Suitability. 
 
@@ -87,14 +120,13 @@ Each service will have each its own PostgreSQL database.
 
 ![LessonsService](https://github.com/EliriaT/school-api/assets/67596753/e44665b9-afac-4775-91ea-4b640b8c4d24)
 
-### **Endpoints**
+### **External Endpoints**
 
 The list of endpoints provided to the client by the API Gateway:
 
 * **User Service**
 
-`– POST /users` - Creates a users. Authentication middleware is applied to the endpoint. Only some roles can
-create users. **Authorization header required**
+`– POST /users` - Creates a users.
 
 <details>
            <summary>Request Body</summary>
@@ -102,11 +134,10 @@ create users. **Authorization header required**
 ```
 {
     "email" : "irinatiora7@gmail.com",
-    "lastName" : "Tiora",
-    "firstName": "Irina",
+    "name" : "Tiora Irina",
+    "password": "541236545",
     "school_id":1,
     "role_id":2,
-    "class_id":0
 }
 ```
 
@@ -117,17 +148,12 @@ create users. **Authorization header required**
 
 ```
 {
-    "id": 2,
-    "email": "irinatiora7@gmail.com",
-    "lastName": "Tiora",
-    "firstName": "Irina",
-    "school_id": 1,
-    "role_id": 2
+    "status": "201"
 }
 ```
 </details>
 
-`– POST /users/login` -  Login to the service. This endpoint returns the Access token.
+`– POST /users/login` -  Login to the service. 
 
 <details>
            <summary>Request Body</summary>
@@ -146,16 +172,34 @@ create users. **Authorization header required**
 
 ```
 {
-    "token" : "v4.local.5Y91o9Gpgi56F7T3HPZO9RWPsDfDUdnD_N9A2flYzFTqWFlNZRXJVciENq1giChiQZm1lvayZIKIkxJPnwcWd_qoZBra4n1FvdoeabLtKDTmzteM9D4GJ1JSGvKR2WwH2Oyx6YK1_2IIrUyQiT1-Q3akC-epFaengnm7d30-Lar9fwSbfAK3FtL-EZsYF_yKDY5-JH6Ljw6sL0j689OqBKgdU1J9zbheJhv88KSbC34mlXSVMeyYRK8wJt_dV2d2ebQ8i5_Qdm8OapQHzLG8UMnaNnMiwnCkP1lSqecT2PiEkGuDth41WrUou-YMVAljHT64YmvpPQe7CYEMPRl9Z0FD79sbKFLcVQXlVNo-zDnYQ56enr9QIDbZlkOfS_ef-Rcdv67x6E1uJeLk9Hff4GdlbDCLfAmXaw",
+    "status": "200",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzA3NTA1NzIsImlzcyI6InNjaG9vbC1hb2kiLCJJZCI6MSwiRW1haWwiOiJpcmluYTdAZ21haWwuY29tIiwiU2Nob29sSWQiOjEsIkNsYXNzSWQiOjAsIlJvbGVJZCI6MTB9.LQFoZcMnpwdY77OHN0bYTmYPpZUV_1qVcwlqBRniY5g"
 }
 ```
 </details>
 
 `– GEY /users/:id` - Get a user by id
 
+<details>
+           <summary>Response Body</summary>
+
+```
+{
+    "data": {
+        "email": "irina7@gmail.com",
+        "id": "1",
+        "name": "irina",
+        "roleId": "10",
+        "schoolId": "1"
+    },
+    "status": "200"
+}
+```
+</details>
+
 * **Schools Administration Service**
 
-`– POST /schools` - Creates a school. Admin only access. 
+`– POST /schools` - Creates a school.
 
 <details>
            <summary>Request Body</summary>
@@ -173,22 +217,22 @@ create users. **Authorization header required**
 
 ```
 {
-    "id": 3,
-    "name": "I.P.L.T. Mihai Viteazu",
+    "status": "201"
 }
 ```
 </details>
 
 
-`– POST /class ` -  Creates a class. Director’s and manager’s school only access. 
+`– POST /class ` -  Creates a class.
 
 <details>
            <summary>Request Body</summary>
 
 ```
 {
-    "name" :  "Clasa 6",
-    "head_teacher": 2
+    "headTeacher": "1",
+    "name": "clasa2",
+    "schoolId": "2"
 }
 ```
 
@@ -199,10 +243,7 @@ create users. **Authorization header required**
 
 ```
 {
-    "id": 1,
-    "name": "Clasa 6",
-    "head_teacher": 2,
-    "school_id": 4,
+    "status": "201"
 }
 ```
 </details>
@@ -213,33 +254,27 @@ create users. **Authorization header required**
            <summary>Response Body</summary>
 
 ```
-[
-    {
-        "id": 1,
-        "name": "Clasa 6",
-        "head_teacher": 3,
-        "school_id": 4,
-        "head_teacher_name": "Noroc Viorel",
-    }
-]
+{
+    "data": {
+        "headTeacher": "1",
+        "id": "1",
+        "name": "clasa2",
+        "schoolId": "2"
+    },
+    "status": "200"
+}
 ```
 </details>
 
 `- POST -/student` - Create a student
-
-* **Lessons Service**
-
-`– POST /course` - Creates a course. Access limited to director and manager
 
 <details>
            <summary>Request Body</summary>
 
 ```
 {
-    "name":"Matematica",
-    "teacher_id":3,
-    "semester_id":1,
-    "class_id":1
+    "userID": "1",
+    "classID": "3"
 }
 ```
 
@@ -250,37 +285,103 @@ create users. **Authorization header required**
 
 ```
 {
-    "id": 2,
-    "name": "Matematica",
-    "teacher_id": 3,
-    "semester_id": 1,
-    "class_id": 1,
+    "status": "201"
 }
 ```
 </details>
 
-`– GET /course/:id` - Get students list together with their marks. A student will receive in the response only their
-marks, a teacher will see all marks to their taught subject.
+* **Lessons Service**
+
+`– POST /course` - Creates a course.
+
+<details>
+           <summary>Request Body</summary>
+
+```
+{
+    "classId": "3",
+    "name": "laboris in ut",
+    "teacherId": "1"
+}
+```
+
+</details>
 
 <details>
            <summary>Response Body</summary>
 
 ```
 {
-    "id": 2,
-    "course_name": "Matematica",
-    "teacher_id": 3,
-    "semester_id": 1,
-    "class_id": 1,
-    "dates": ["2023-09-27T17:04:49.9149Z"],
-    "marks": [
-        "mark_id" : 2,
-        "course_id": 3,
-        "mark_date": "2023-09-27T17:04:49.9149Z",
-        "is_absent": false,
-        "mark": 7,
-        "student_id": 3,
-    ]
+    "status": "201"
+}
+```
+</details>
+
+`– GET /course/:id` - Get course`s marks
+
+<details>
+           <summary>Response Body</summary>
+
+```
+{
+    "data": {
+        "classId": "3",
+        "id": "2",
+        "marks": [
+            {
+                "courseId": "2",
+                "id": "1",
+                "mark": 8,
+                "markDate": "17.11.2024",
+                "studentId": "2"
+            },
+            {
+                "courseId": "2",
+                "id": "2",
+                "mark": 8,
+                "markDate": "17.11.2024",
+                "studentId": "2"
+            },
+            {
+                "courseId": "2",
+                "id": "3",
+                "mark": 8,
+                "markDate": "17.11.2024",
+                "studentId": "2"
+            },
+            {
+                "courseId": "2",
+                "id": "36",
+                "mark": 8,
+                "markDate": "17.11.2024",
+                "studentId": "2"
+            },
+            {
+                "courseId": "2",
+                "id": "37",
+                "mark": 8,
+                "markDate": "17.11.2024",
+                "studentId": "2"
+            },
+            {
+                "courseId": "2",
+                "id": "38",
+                "mark": 8,
+                "markDate": "17.11.2024",
+                "studentId": "2"
+            },
+            {
+                "courseId": "2",
+                "id": "39",
+                "mark": 8,
+                "markDate": "17.11.2024",
+                "studentId": "2"
+            }
+        ],
+        "name": "laboris in ut",
+        "teacherId": "1"
+    },
+    "status": "200"
 }
 ```
 </details>
@@ -292,12 +393,12 @@ marks, a teacher will see all marks to their taught subject.
 
 ```
 {
-    "name":"Matematica",
-    "course_id":2,
-    "start_hour":"9:00",
-    "end_hour":"9:45",
-    "week_day":"Tuesday",
-    "classroom":"35"
+    "classRoom": "Ut culpa mollit ad magna",
+    "courseId": "4",
+    "endHour": "10:45",
+    "name": "sunt nostrud anim nulla non",
+    "startHour": "10:00",
+    "weekDay": "Monday"
 }
 ```
 
@@ -308,13 +409,7 @@ marks, a teacher will see all marks to their taught subject.
 
 ```
 {
-    "id":3,
-    "name":"Matematica",
-    "course_id":2,
-    "start_hour":"9:00",
-    "end_hour":"9:45",
-    "week_day":"Tuesday",
-    "classroom":"35"
+    "status": "201"
 }
 ```
 </details>
@@ -326,11 +421,11 @@ marks, a teacher will see all marks to their taught subject.
 
 ```
 {
-    "course_id":12,
-    "mark_date":"2022-10-26T00:00:00Z",
-    "is_absent":true,
-    "mark":0,
-    "student_id":7
+    "courseId": "2",
+    "isAbsent": false,
+    "mark": 8,
+    "markDate": "17.11.2024",
+    "studentId": "2"
 }
 ```
 
@@ -341,16 +436,10 @@ marks, a teacher will see all marks to their taught subject.
 
 ```
 {
-    "id":1,
-    "course_id":12,
-    "mark_date":"2022-10-26T00:00:00Z",
-    "is_absent":true,
-    "mark":0,
-    "student_id":7
+    "status": "201"
 }
 ```
 </details>
 
 ## Deployment and Scaling:
-Microservices can be deployed using Docker container. When it comes to containers orchestration, load balancing, 
-Kubernetes cluster will be used for this.
+Microservices can be deployed using Docker container.
