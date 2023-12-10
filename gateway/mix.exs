@@ -32,6 +32,7 @@ defmodule Gateway.MixProject do
       {:google_protos, "~> 0.1"},
       {:redix, "~> 1.3"},
       {:uuid, "~> 1.1"},
+      {:libring, "~> 1.0"}
     ]
   end
 

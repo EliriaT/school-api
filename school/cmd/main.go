@@ -31,7 +31,7 @@ func main() {
 
 	log.Println("School service started")
 
-	authServer := auth.AuthServer{Handler: handler, Jwt: jwt}
+	authServer := auth.AuthServer{Handler: handler, Jwt: jwt, Config: config}
 	schoolServer := school.SchoolServer{Handler: handler}
 
 	grpcServer := grpc.NewServer()

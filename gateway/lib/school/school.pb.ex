@@ -3,7 +3,7 @@ defmodule School.SchoolRequest do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :name, 1, type: :string
+  field(:name, 1, type: :string)
 end
 
 defmodule School.CreateResponse do
@@ -11,8 +11,8 @@ defmodule School.CreateResponse do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :status, 1, type: :int64
-  field :error, 2, type: :string
+  field(:status, 1, type: :int64)
+  field(:error, 2, type: :string)
 end
 
 defmodule School.ClassRequest do
@@ -20,9 +20,9 @@ defmodule School.ClassRequest do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :name, 1, type: :string
-  field :headTeacher, 2, type: :int64
-  field :schoolId, 3, type: :int64
+  field(:name, 1, type: :string)
+  field(:headTeacher, 2, type: :int64)
+  field(:schoolId, 3, type: :int64)
 end
 
 defmodule School.Class do
@@ -30,10 +30,10 @@ defmodule School.Class do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :id, 1, type: :int64
-  field :name, 2, type: :string
-  field :headTeacher, 3, type: :int64
-  field :schoolId, 4, type: :int64
+  field(:id, 1, type: :int64)
+  field(:name, 2, type: :string)
+  field(:headTeacher, 3, type: :int64)
+  field(:schoolId, 4, type: :int64)
 end
 
 defmodule School.ClassResponse do
@@ -41,9 +41,9 @@ defmodule School.ClassResponse do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :status, 1, type: :int64
-  field :error, 2, type: :string
-  field :data, 3, type: School.Class
+  field(:status, 1, type: :int64)
+  field(:error, 2, type: :string)
+  field(:data, 3, type: School.Class)
 end
 
 defmodule School.StudentRequest do
@@ -51,8 +51,8 @@ defmodule School.StudentRequest do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :userID, 1, type: :int64
-  field :classID, 2, type: :int64
+  field(:userID, 1, type: :int64)
+  field(:classID, 2, type: :int64)
 end
 
 defmodule School.HealthRequest do
@@ -60,7 +60,7 @@ defmodule School.HealthRequest do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :check, 1, type: :bool
+  field(:check, 1, type: :bool)
 end
 
 defmodule School.HealthResponse do
@@ -68,7 +68,7 @@ defmodule School.HealthResponse do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :healthy, 1, type: :bool
+  field(:healthy, 1, type: :bool)
 end
 
 defmodule School.ID do
@@ -76,7 +76,7 @@ defmodule School.ID do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :id, 1, type: :int64
+  field(:id, 1, type: :int64)
 end
 
 defmodule School.SchoolService.Service do
@@ -84,15 +84,15 @@ defmodule School.SchoolService.Service do
 
   use GRPC.Service, name: "school.SchoolService", protoc_gen_elixir_version: "0.12.0"
 
-  rpc :CreateSchool, School.SchoolRequest, School.CreateResponse
+  rpc(:CreateSchool, School.SchoolRequest, School.CreateResponse)
 
-  rpc :CreateClass, School.ClassRequest, School.CreateResponse
+  rpc(:CreateClass, School.ClassRequest, School.CreateResponse)
 
-  rpc :GetClass, School.ID, School.ClassResponse
+  rpc(:GetClass, School.ID, School.ClassResponse)
 
-  rpc :CreateStudent, School.StudentRequest, School.CreateResponse
+  rpc(:CreateStudent, School.StudentRequest, School.CreateResponse)
 
-  rpc :CheckHealth, School.HealthRequest, School.HealthResponse
+  rpc(:CheckHealth, School.HealthRequest, School.HealthResponse)
 end
 
 defmodule School.SchoolService.Stub do

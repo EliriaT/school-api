@@ -3,14 +3,17 @@ package auth
 import (
 	"context"
 	"github.com/EliriaT/school-api/school/internal/db"
+	"github.com/EliriaT/school-api/school/pkg/config"
 	"github.com/EliriaT/school-api/school/pkg/models"
 	"github.com/EliriaT/school-api/school/pkg/pb"
 	"net/http"
+	"time"
 )
 
 type AuthServer struct {
 	Handler db.Handler
 	Jwt     JwtWrapper
+	Config  config.Config // used to test circuit breakers
 }
 
 func (s *AuthServer) GetUser(ctx context.Context, req *pb.EntityID) (*pb.UserResponse, error) {
@@ -39,6 +42,11 @@ func (s *AuthServer) GetUser(ctx context.Context, req *pb.EntityID) (*pb.UserRes
 // TODO SHULD CHECK ROLE FOR ENUM
 func (s *AuthServer) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	var user models.User
+
+	// testing rerouting of request with service high availability. Comment "if" for checking tripping of Circuit Breaker
+	if s.Config.MyUrl == "school-service:8081" {
+		time.Sleep(time.Second * 10)
+	}
 
 	if result := s.Handler.DB.Where(&models.User{Email: req.Email}).First(&user); result.Error == nil {
 		return &pb.RegisterResponse{

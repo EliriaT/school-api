@@ -3,7 +3,7 @@ defmodule Auth.EntityID do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :id, 1, type: :int64
+  field(:id, 1, type: :int64)
 end
 
 defmodule Auth.UserResponse do
@@ -11,9 +11,9 @@ defmodule Auth.UserResponse do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :status, 1, type: :int64
-  field :error, 2, type: :string
-  field :data, 3, type: Auth.User
+  field(:status, 1, type: :int64)
+  field(:error, 2, type: :string)
+  field(:data, 3, type: Auth.User)
 end
 
 defmodule Auth.User do
@@ -21,11 +21,11 @@ defmodule Auth.User do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :id, 1, type: :int64
-  field :email, 2, type: :string
-  field :name, 3, type: :string
-  field :schoolId, 4, type: :int64
-  field :roleId, 5, type: :int64
+  field(:id, 1, type: :int64)
+  field(:email, 2, type: :string)
+  field(:name, 3, type: :string)
+  field(:schoolId, 4, type: :int64)
+  field(:roleId, 5, type: :int64)
 end
 
 defmodule Auth.RegisterRequest do
@@ -33,11 +33,11 @@ defmodule Auth.RegisterRequest do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :email, 1, type: :string
-  field :password, 2, type: :string
-  field :name, 3, type: :string
-  field :schoolId, 4, type: :int64
-  field :roleId, 5, type: :int64
+  field(:email, 1, type: :string)
+  field(:password, 2, type: :string)
+  field(:name, 3, type: :string)
+  field(:schoolId, 4, type: :int64)
+  field(:roleId, 5, type: :int64)
 end
 
 defmodule Auth.RegisterResponse do
@@ -45,8 +45,8 @@ defmodule Auth.RegisterResponse do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :status, 1, type: :int64
-  field :error, 2, type: :string
+  field(:status, 1, type: :int64)
+  field(:error, 2, type: :string)
 end
 
 defmodule Auth.LoginRequest do
@@ -54,8 +54,8 @@ defmodule Auth.LoginRequest do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :email, 1, type: :string
-  field :password, 2, type: :string
+  field(:email, 1, type: :string)
+  field(:password, 2, type: :string)
 end
 
 defmodule Auth.LoginResponse do
@@ -63,9 +63,9 @@ defmodule Auth.LoginResponse do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :status, 1, type: :int64
-  field :error, 2, type: :string
-  field :token, 3, type: :string
+  field(:status, 1, type: :int64)
+  field(:error, 2, type: :string)
+  field(:token, 3, type: :string)
 end
 
 defmodule Auth.ValidateRequest do
@@ -73,7 +73,7 @@ defmodule Auth.ValidateRequest do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :token, 1, type: :string
+  field(:token, 1, type: :string)
 end
 
 defmodule Auth.ValidateResponse do
@@ -81,9 +81,9 @@ defmodule Auth.ValidateResponse do
 
   use Protobuf, protoc_gen_elixir_version: "0.12.0", syntax: :proto3
 
-  field :status, 1, type: :int64
-  field :error, 2, type: :string
-  field :userId, 3, type: :int64
+  field(:status, 1, type: :int64)
+  field(:error, 2, type: :string)
+  field(:userId, 3, type: :int64)
 end
 
 defmodule Auth.AuthService.Service do
@@ -91,13 +91,13 @@ defmodule Auth.AuthService.Service do
 
   use GRPC.Service, name: "auth.AuthService", protoc_gen_elixir_version: "0.12.0"
 
-  rpc :GetUser, Auth.EntityID, Auth.UserResponse
+  rpc(:GetUser, Auth.EntityID, Auth.UserResponse)
 
-  rpc :Register, Auth.RegisterRequest, Auth.RegisterResponse
+  rpc(:Register, Auth.RegisterRequest, Auth.RegisterResponse)
 
-  rpc :Login, Auth.LoginRequest, Auth.LoginResponse
+  rpc(:Login, Auth.LoginRequest, Auth.LoginResponse)
 
-  rpc :Validate, Auth.ValidateRequest, Auth.ValidateResponse
+  rpc(:Validate, Auth.ValidateRequest, Auth.ValidateResponse)
 end
 
 defmodule Auth.AuthService.Stub do

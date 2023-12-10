@@ -5,6 +5,8 @@ defmodule Course.Client do
   @timeout 4000
   @gen_server_timeout 10000
 
+  @serviceType "course"
+
   def start_link(conn, uuidName) do
     name = {:via, Registry, {PidRegistry, uuidName}}
     GenServer.start_link(__MODULE__, conn, name: name)
@@ -14,20 +16,157 @@ defmodule Course.Client do
     {:ok, conn}
   end
 
-  def create_course(pid,body) do
-    GenServer.call(pid, {:create_course, body},  @gen_server_timeout)
+  def create_course(body, 2) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@serviceType, address)
+        GenServer.call(pid, {:create_course, body}, @gen_server_timeout)
+
+      _ ->
+        {:unavailable}
+    end
   end
 
-  def create_lesson(pid,body) do
-    GenServer.call(pid, {:create_lesson, body},  @gen_server_timeout)
+  def create_course(body, rerouteCounter) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@serviceType, address)
+        reply = GenServer.call(pid, {:create_course, body}, @gen_server_timeout)
+
+        case reply do
+          {:error, error} ->
+            rerouteCounter = rerouteCounter + 1
+            Logger.info("Rerouting happened")
+
+            # reroute
+            Course.Client.create_school(body, rerouteCounter)
+
+          {:ok, response} ->
+            {:ok, response}
+        end
+
+      _ ->
+        {:unavailable}
+    end
   end
 
-  def create_mark(pid,body) do
-    GenServer.call(pid, {:create_mark, body}, @gen_server_timeout)
+  def create_lesson(body, 2) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@serviceType, address)
+        GenServer.call(pid, {:create_lesson, body}, @gen_server_timeout)
+
+      _ ->
+        {:unavailable}
+    end
   end
 
-  def get_course(pid,id) do
-    GenServer.call(pid, {:get_course, id}, @gen_server_timeout)
+  def create_lesson(body, rerouteCounter) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@serviceType, address)
+        reply = GenServer.call(pid, {:create_lesson, body}, @gen_server_timeout)
+
+        case reply do
+          {:error, error} ->
+            rerouteCounter = rerouteCounter + 1
+            Logger.info("Rerouting happened")
+
+            # reroute
+            Course.Client.create_lesson(body, rerouteCounter)
+
+          {:ok, response} ->
+            {:ok, response}
+        end
+
+      _ ->
+        {:unavailable}
+    end
+  end
+
+  def create_mark(body, 2) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@serviceType, address)
+        GenServer.call(pid, {:create_mark, body}, @gen_server_timeout)
+
+      _ ->
+        {:unavailable}
+    end
+  end
+
+  def create_mark(body, rerouteCounter) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@serviceType, address)
+        reply = GenServer.call(pid, {:create_mark, body}, @gen_server_timeout)
+
+        case reply do
+          {:error, error} ->
+            rerouteCounter = rerouteCounter + 1
+            Logger.info("Rerouting happened")
+
+            # reroute
+            Course.Client.create_mark(body, rerouteCounter)
+
+          {:ok, response} ->
+            {:ok, response}
+        end
+
+      _ ->
+        {:unavailable}
+    end
+  end
+
+  def get_course(id, 2) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@serviceType, address)
+        GenServer.call(pid, {:get_course, id}, @gen_server_timeout)
+
+      _ ->
+        {:unavailable}
+    end
+  end
+
+  def get_course(id, rerouteCounter) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@serviceType, address)
+        reply = GenServer.call(pid, {:get_course, id}, @gen_server_timeout)
+
+        case reply do
+          {:error, error} ->
+            # increment reroute counter
+            rerouteCounter = rerouteCounter + 1
+            Logger.info("Rerouting happened")
+
+            # reroute
+            Course.Client.get_course(id, rerouteCounter)
+
+          {:ok, response} ->
+            {:ok, response}
+        end
+
+      _ ->
+        {:unavailable}
+    end
   end
 
   def handle_call(

@@ -32,45 +32,40 @@ defmodule Gateway do
         "schoolId" => schoolId,
         "roleId" => roleId
       } = body ->
-        serviceType = "school"
-        actualServiceType = "auth"
 
-        %{"service" => address, "status" => status} = SDClient.loadBalanceService(serviceType)
+        # here service high availability and circuit breaker happens
+        reply = Auth.Client.register(body, 0)
 
-        case status do
-          200 ->
-            # nu poate fi ca procesul sa nu fi fost inregistrat, de asta pid nu poate fi false
-            pid = SDClient.getProcessPid(actualServiceType, address)
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            Logger.info("No service is available")
 
-            reply = Auth.Client.register(pid, body)
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-            case reply do
-              {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-                conn
-                |> put_resp_header("Connection", "close")
-                |> send_resp(408, "Request timeout")
+          {:error, error} ->
+            Logger.info("No service is available")
 
-              {:error, error} ->
-                send_resp(conn, 500, error)
+            send_resp(conn, 500, error)
 
-              {:ok, user} ->
-                jsonResp = Protobuf.JSON.encode(user)
-
-                case jsonResp do
-                  {:ok, jsonResp} ->
-                    conn
-                    |> put_resp_content_type("application/json")
-                    |> send_resp(user.status, jsonResp)
-
-                  {:error, _} ->
-                    send_resp(conn, 500, "json encoding failed")
-                end
-            end
-
-          _ ->
+          {:unavailable} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(503, 'unavailable')
+
+          {:ok, user} ->
+            jsonResp = Protobuf.JSON.encode(user)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(user.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
         end
 
       _ ->
@@ -86,43 +81,34 @@ defmodule Gateway do
         "email" => email,
         "password" => password
       } = body ->
-        serviceType = "school"
-        actualServiceType = "auth"
+        reply = Auth.Client.login(body, 0)
 
-        %{"service" => address, "status" => status} = SDClient.loadBalanceService(serviceType)
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-        case status do
-          200 ->
-            pid = SDClient.getProcessPid(actualServiceType, address)
-            reply = Auth.Client.login(pid, body)
+          {:error, error} ->
+            send_resp(conn, 500, error)
 
-            case reply do
-              {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-                conn
-                |> put_resp_header("Connection", "close")
-                |> send_resp(408, "Request timeout")
-
-              {:error, error} ->
-                send_resp(conn, 500, error)
-
-              {:ok, user} ->
-                jsonResp = Protobuf.JSON.encode(user)
-
-                case jsonResp do
-                  {:ok, jsonResp} ->
-                    conn
-                    |> put_resp_content_type("application/json")
-                    |> send_resp(user.status, jsonResp)
-
-                  {:error, _} ->
-                    send_resp(conn, 500, "json encoding failed")
-                end
-            end
-
-          _ ->
+          {:unavailable} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(503, 'unavailable')
+
+          {:ok, user} ->
+            jsonResp = Protobuf.JSON.encode(user)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(user.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
         end
 
       _ ->
@@ -137,43 +123,34 @@ defmodule Gateway do
       %{
         "token" => token
       } ->
-        serviceType = "school"
-        actualServiceType = "auth"
-        %{"service" => address, "status" => status} = SDClient.loadBalanceService(serviceType)
+        reply = Auth.Client.validate(token, 0)
 
-        case status do
-          200 ->
-            pid = SDClient.getProcessPid(actualServiceType, address)
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-            reply = Auth.Client.validate(pid, token)
+          {:error, error} ->
+            send_resp(conn, 500, error)
 
-            case reply do
-              {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-                conn
-                |> put_resp_header("Connection", "close")
-                |> send_resp(408, "Request timeout")
-
-              {:error, error} ->
-                send_resp(conn, 500, error)
-
-              {:ok, user} ->
-                jsonResp = Protobuf.JSON.encode(user)
-
-                case jsonResp do
-                  {:ok, jsonResp} ->
-                    conn
-                    |> put_resp_content_type("application/json")
-                    |> send_resp(user.status, jsonResp)
-
-                  {:error, _} ->
-                    send_resp(conn, 500, "json encoding failed")
-                end
-            end
-
-          _ ->
+          {:unavailable} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(503, 'unavailable')
+
+          {:ok, user} ->
+            jsonResp = Protobuf.JSON.encode(user)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(user.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
         end
 
       _ ->
@@ -185,60 +162,54 @@ defmodule Gateway do
 
   get "/users/:id" do
     # Extract from cache if present
-    case Redix.command(:redix, ["GET", "user" <> id]) do
+
+    node = HashRing.Managed.key_to_node(:myring, "user" <> id)
+    Logger.info("Getting from cache at #{node}")
+
+    case Redix.command(node, ["GET", "user" <> id]) do
       {:ok, nil} ->
         id = String.to_integer(id)
 
-        serviceType = "school"
-        actualServiceType = "auth"
+        reply = Auth.Client.get_user(id, 0)
 
-        %{"service" => address, "status" => status} = SDClient.loadBalanceService(serviceType)
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-        case status do
-          200 ->
-            pid = SDClient.getProcessPid(actualServiceType, address)
+          {:error, error} ->
+            send_resp(conn, 500, error)
 
-            reply = Auth.Client.get_user(pid, id)
-
-            case reply do
-              {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-                conn
-                |> put_resp_header("Connection", "close")
-                |> send_resp(408, "Request timeout")
-
-              {:error, error} ->
-                send_resp(conn, 500, error)
-
-              {:ok, user} ->
-                jsonResp = Protobuf.JSON.encode(user)
-
-                case jsonResp do
-                  {:ok, jsonResp} ->
-                    # Put in cache
-                    if user.status != 404 do
-                      Redix.command(:redix, [
-                        "SET",
-                        "user" <> Integer.to_string(user.data.id),
-                        jsonResp
-                      ])
-                    end
-
-                    conn
-                    |> put_resp_content_type("application/json")
-                    |> send_resp(user.status, jsonResp)
-
-                  {:error, _} ->
-                    send_resp(conn, 500, "json encoding failed")
-                end
-
-              _ ->
-                send_resp(conn, 500, "")
-            end
-
-          _ ->
+          {:unavailable} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(503, 'unavailable')
+
+          {:ok, user} ->
+            jsonResp = Protobuf.JSON.encode(user)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                # Put in cache
+                if user.status != 404 do
+                  Redix.command(node, [
+                    "SET",
+                    "user" <> Integer.to_string(user.data.id),
+                    jsonResp
+                  ])
+                end
+
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(user.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+
+          _ ->
+            send_resp(conn, 500, "")
         end
 
       {:ok, body} ->
@@ -255,41 +226,34 @@ defmodule Gateway do
       %{
         "name" => name
       } = body ->
-        serviceType = "school"
-        %{"service" => address, "status" => status} = SDClient.loadBalanceService(serviceType)
+        reply = School.Client.create_school(body, 0)
 
-        case status do
-          200 ->
-            pid = SDClient.getProcessPid(serviceType, address)
-            reply = School.Client.create_school(pid, body)
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-            case reply do
-              {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-                conn
-                |> put_resp_header("Connection", "close")
-                |> send_resp(408, "Request timeout")
+          {:error, error} ->
+            send_resp(conn, 500, error)
 
-              {:error, error} ->
-                send_resp(conn, 500, error)
-
-              {:ok, protoReply} ->
-                jsonResp = Protobuf.JSON.encode(protoReply)
-
-                case jsonResp do
-                  {:ok, jsonResp} ->
-                    conn
-                    |> put_resp_content_type("application/json")
-                    |> send_resp(protoReply.status, jsonResp)
-
-                  {:error, _} ->
-                    send_resp(conn, 500, "json encoding failed")
-                end
-            end
-
-          _ ->
+          {:unavailable} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(503, 'unavailable')
+
+          {:ok, protoReply} ->
+            jsonResp = Protobuf.JSON.encode(protoReply)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(protoReply.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
         end
 
       _ ->
@@ -306,41 +270,34 @@ defmodule Gateway do
         "name" => name,
         "schoolId" => schoolId
       } = body ->
-        serviceType = "school"
-        %{"service" => address, "status" => status} = SDClient.loadBalanceService(serviceType)
+        reply = School.Client.create_class(body, 0)
 
-        case status do
-          200 ->
-            pid = SDClient.getProcessPid(serviceType, address)
-            reply = School.Client.create_class(pid, body)
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-            case reply do
-              {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-                conn
-                |> put_resp_header("Connection", "close")
-                |> send_resp(408, "Request timeout")
+          {:error, error} ->
+            send_resp(conn, 500, error)
 
-              {:error, error} ->
-                send_resp(conn, 500, error)
-
-              {:ok, protoReply} ->
-                jsonResp = Protobuf.JSON.encode(protoReply)
-
-                case jsonResp do
-                  {:ok, jsonResp} ->
-                    conn
-                    |> put_resp_content_type("application/json")
-                    |> send_resp(protoReply.status, jsonResp)
-
-                  {:error, _} ->
-                    send_resp(conn, 500, "json encoding failed")
-                end
-            end
-
-          _ ->
+          {:unavailable} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(503, 'unavailable')
+
+          {:ok, protoReply} ->
+            jsonResp = Protobuf.JSON.encode(protoReply)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(protoReply.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
         end
 
       _ ->
@@ -356,41 +313,34 @@ defmodule Gateway do
         "classID" => classID,
         "userID" => userID
       } = body ->
-        serviceType = "school"
-        %{"service" => address, "status" => status} = SDClient.loadBalanceService(serviceType)
+        reply = School.Client.create_student(body, 0)
 
-        case status do
-          200 ->
-            pid = SDClient.getProcessPid(serviceType, address)
-            reply = School.Client.create_student(pid, body)
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-            case reply do
-              {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-                conn
-                |> put_resp_header("Connection", "close")
-                |> send_resp(408, "Request timeout")
+          {:error, error} ->
+            send_resp(conn, 500, error)
 
-              {:error, error} ->
-                send_resp(conn, 500, error)
-
-              {:ok, protoReply} ->
-                jsonResp = Protobuf.JSON.encode(protoReply)
-
-                case jsonResp do
-                  {:ok, jsonResp} ->
-                    conn
-                    |> put_resp_content_type("application/json")
-                    |> send_resp(protoReply.status, jsonResp)
-
-                  {:error, _} ->
-                    send_resp(conn, 500, "json encoding failed")
-                end
-            end
-
-          _ ->
+          {:unavailable} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(503, 'unavailable')
+
+          {:ok, protoReply} ->
+            jsonResp = Protobuf.JSON.encode(protoReply)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(protoReply.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
         end
 
       _ ->
@@ -401,57 +351,53 @@ defmodule Gateway do
   end
 
   get "/class/:id" do
+    node = HashRing.Managed.key_to_node(:myring, "class" <> id)
+    Logger.info("Getting from cache at #{node}")
+
     # Extract from cache if present
-    case Redix.command(:redix, ["GET", "class" <> id]) do
+    case Redix.command(node, ["GET", "class" <> id]) do
       {:ok, nil} ->
         id = String.to_integer(id)
 
-        serviceType = "school"
-        %{"service" => address, "status" => status} = SDClient.loadBalanceService(serviceType)
+        reply = School.Client.get_class(id, 0)
 
-        case status do
-          200 ->
-            pid = SDClient.getProcessPid(serviceType, address)
-            reply = School.Client.get_class(pid, id)
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-            case reply do
-              {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-                conn
-                |> put_resp_header("Connection", "close")
-                |> send_resp(408, "Request timeout")
+          {:error, error} ->
+            send_resp(conn, 500, error)
 
-              {:error, error} ->
-                send_resp(conn, 500, error)
-
-              {:ok, class} ->
-                jsonResp = Protobuf.JSON.encode(class)
-
-                case jsonResp do
-                  {:ok, jsonResp} ->
-                    if class.status != 404 do
-                      Redix.command(:redix, [
-                        "SET",
-                        "class" <> Integer.to_string(class.data.id),
-                        jsonResp
-                      ])
-                    end
-
-                    conn
-                    |> put_resp_content_type("application/json")
-                    |> send_resp(class.status, jsonResp)
-
-                  {:error, _} ->
-                    send_resp(conn, 500, "json encoding failed")
-                end
-
-              _ ->
-                send_resp(conn, 500, "")
-            end
-
-          _ ->
+          {:unavailable} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(503, 'unavailable')
+
+          {:ok, class} ->
+            jsonResp = Protobuf.JSON.encode(class)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                if class.status != 404 do
+                  Redix.command(node, [
+                    "SET",
+                    "class" <> Integer.to_string(class.data.id),
+                    jsonResp
+                  ])
+                end
+
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(class.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+
+          _ ->
+            send_resp(conn, 500, "")
         end
 
       {:ok, body} ->
@@ -472,41 +418,34 @@ defmodule Gateway do
         "name" => name,
         "teacherId" => teacherId
       } = body ->
-        serviceType = "course"
-        %{"service" => address, "status" => status} = SDClient.loadBalanceService(serviceType)
+        reply = Course.Client.create_course(body, 0)
 
-        case status do
-          200 ->
-            pid = SDClient.getProcessPid(serviceType, address)
-            reply = Course.Client.create_course(pid, body)
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-            case reply do
-              {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-                conn
-                |> put_resp_header("Connection", "close")
-                |> send_resp(408, "Request timeout")
+          {:error, error} ->
+            send_resp(conn, 500, error)
 
-              {:error, error} ->
-                send_resp(conn, 500, error)
-
-              {:ok, protoReply} ->
-                jsonResp = Protobuf.JSON.encode(protoReply)
-
-                case jsonResp do
-                  {:ok, jsonResp} ->
-                    conn
-                    |> put_resp_content_type("application/json")
-                    |> send_resp(protoReply.status, jsonResp)
-
-                  {:error, _} ->
-                    send_resp(conn, 500, "json encoding failed")
-                end
-            end
-
-          _ ->
+          {:unavailable} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(503, 'unavailable')
+
+          {:ok, protoReply} ->
+            jsonResp = Protobuf.JSON.encode(protoReply)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(protoReply.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
         end
 
       _ ->
@@ -517,57 +456,53 @@ defmodule Gateway do
   end
 
   get "/course/:id" do
-    case Redix.command(:redix, ["GET", "course" <> id]) do
+    node = HashRing.Managed.key_to_node(:myring, "course" <> id)
+    Logger.info("Getting from cache at #{node}")
+
+    case Redix.command(node, ["GET", "course" <> id]) do
       {:ok, nil} ->
         Logger.info("No course data found in cache")
         id = String.to_integer(id)
 
-        serviceType = "course"
-        %{"service" => address, "status" => status} = SDClient.loadBalanceService(serviceType)
+        reply = Course.Client.get_course(id, 0)
 
-        case status do
-          200 ->
-            pid = SDClient.getProcessPid(serviceType, address)
-            reply = Course.Client.get_course(pid, id)
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-            case reply do
-              {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-                conn
-                |> put_resp_header("Connection", "close")
-                |> send_resp(408, "Request timeout")
+          {:error, error} ->
+            send_resp(conn, 500, error)
 
-              {:error, error} ->
-                send_resp(conn, 500, error)
-
-              {:ok, course} ->
-                jsonResp = Protobuf.JSON.encode(course)
-
-                case jsonResp do
-                  {:ok, jsonResp} ->
-                    if course.status != 404 do
-                      Redix.command(:redix, [
-                        "SET",
-                        "course" <> Integer.to_string(course.data.id),
-                        jsonResp
-                      ])
-                    end
-
-                    conn
-                    |> put_resp_content_type("application/json")
-                    |> send_resp(course.status, jsonResp)
-
-                  {:error, _} ->
-                    send_resp(conn, 500, "json encoding failed")
-                end
-
-              _ ->
-                send_resp(conn, 500, "")
-            end
-
-          _ ->
+          {:unavailable} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(503, 'unavailable')
+
+          {:ok, course} ->
+            jsonResp = Protobuf.JSON.encode(course)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                if course.status != 404 do
+                  Redix.command(node, [
+                    "SET",
+                    "course" <> Integer.to_string(course.data.id),
+                    jsonResp
+                  ])
+                end
+
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(course.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+
+          _ ->
+            send_resp(conn, 500, "")
         end
 
       {:ok, body} ->
@@ -590,41 +525,34 @@ defmodule Gateway do
         "name" => name,
         "weekDay" => weekDay
       } = body ->
-        serviceType = "course"
-        %{"service" => address, "status" => status} = SDClient.loadBalanceService(serviceType)
+        reply = Course.Client.create_lesson(body, 0)
 
-        case status do
-          200 ->
-            pid = SDClient.getProcessPid(serviceType, address)
-            reply = Course.Client.create_lesson(pid, body)
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-            case reply do
-              {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-                conn
-                |> put_resp_header("Connection", "close")
-                |> send_resp(408, "Request timeout")
+          {:error, error} ->
+            send_resp(conn, 500, error)
 
-              {:error, error} ->
-                send_resp(conn, 500, error)
-
-              {:ok, protoReply} ->
-                jsonResp = Protobuf.JSON.encode(protoReply)
-
-                case jsonResp do
-                  {:ok, jsonResp} ->
-                    conn
-                    |> put_resp_content_type("application/json")
-                    |> send_resp(protoReply.status, jsonResp)
-
-                  {:error, _} ->
-                    send_resp(conn, 500, "json encoding failed")
-                end
-            end
-
-          _ ->
+          {:unavailable} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(503, 'unavailable')
+
+          {:ok, protoReply} ->
+            jsonResp = Protobuf.JSON.encode(protoReply)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(protoReply.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
         end
 
       _ ->
@@ -643,43 +571,40 @@ defmodule Gateway do
         "markDate" => markDate,
         "studentId" => studentId
       } = body ->
-        serviceType = "course"
-        %{"service" => address, "status" => status} = SDClient.loadBalanceService(serviceType)
+        reply = Course.Client.create_mark(body, 0)
 
-        case status do
-          200 ->
-            pid = SDClient.getProcessPid(serviceType, address)
-            reply = Course.Client.create_mark(pid, body)
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
 
-            case reply do
-              {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
-                conn
-                |> put_resp_header("Connection", "close")
-                |> send_resp(408, "Request timeout")
+          {:error, error} ->
+            send_resp(conn, 500, error)
 
-              {:error, error} ->
-                send_resp(conn, 500, error)
-
-              {:ok, protoReply} ->
-                jsonResp = Protobuf.JSON.encode(protoReply)
-                Logger.info("Removing info of course #{courseId} from cache")
-                Redix.command(:redix, ["DEL", "course" <> courseId])
-
-                case jsonResp do
-                  {:ok, jsonResp} ->
-                    conn
-                    |> put_resp_content_type("application/json")
-                    |> send_resp(protoReply.status, jsonResp)
-
-                  {:error, _} ->
-                    send_resp(conn, 500, "json encoding failed")
-                end
-            end
-
-          _ ->
+          {:unavailable} ->
             conn
             |> put_resp_content_type("application/json")
             |> send_resp(503, 'unavailable')
+
+          {:ok, protoReply} ->
+            jsonResp = Protobuf.JSON.encode(protoReply)
+            Logger.info("Removing info of course #{courseId} from cache")
+
+            node = HashRing.Managed.key_to_node(:myring, "course" <> courseId)
+            Logger.info("Removing info of course from cache at #{node}")
+
+            Redix.command(node, ["DEL", "course" <> courseId])
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                conn
+                |> put_resp_content_type("application/json")
+                |> send_resp(protoReply.status, jsonResp)
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
         end
 
       _ ->

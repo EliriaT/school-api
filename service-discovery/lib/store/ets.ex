@@ -103,7 +103,7 @@ defmodule ETSRegistry do
   end
 
   defp ping([h | t], type) do
-    pint_n_types(3, h, type)
+    ping_n_types(3, h, type)
 
     ping(t, type)
   end
@@ -111,7 +111,7 @@ defmodule ETSRegistry do
   defp ping([], type) do
   end
 
-  defp pint_n_types(0, address, type) do
+  defp ping_n_types(0, address, type) do
     replicas = get_replicas_list(type)
     replicas = List.delete(replicas, address)
 
@@ -119,7 +119,7 @@ defmodule ETSRegistry do
     :ets.insert(:registry, {type, replicas})
   end
 
-  defp pint_n_types(n, address, type) do
+  defp ping_n_types(n, address, type) do
     case type do
       "school" ->
         status = School.Client.check_health(address)
@@ -129,7 +129,7 @@ defmodule ETSRegistry do
             :good
 
           {:error, _error} ->
-            pint_n_types(n - 1, address, type)
+            ping_n_types(n - 1, address, type)
         end
 
       "course" ->
@@ -140,7 +140,7 @@ defmodule ETSRegistry do
             :good
 
           {:error, _error} ->
-            pint_n_types(n - 1, address, type)
+            ping_n_types(n - 1, address, type)
         end
     end
   end

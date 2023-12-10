@@ -6,6 +6,8 @@ services:
   postgres123:
     image: postgres:12-alpine
     container_name: postgres123
+    ports:
+      - "5434:5432"
     networks:
       - school-network
     environment:
@@ -69,7 +71,7 @@ services:
     entrypoint:
       [
         "/course/wait-for.sh",
-        "course-service:8082",
+        "postgres123:5432",
         "--",
         "/course/main"
       ]
@@ -77,6 +79,8 @@ services:
   postgres12:
     image: postgres:12-alpine
     container_name: postgres12
+    ports:
+      - "5432:5432"
     networks:
       - school-network
     environment:
@@ -138,7 +142,7 @@ services:
     entrypoint:
       [
         "/school/wait-for.sh",
-        "school-service:8081",
+        "postgres12:5432",
         "--",
         "/school/main"
       ]
@@ -155,8 +159,10 @@ services:
       MIX_ENV: dev
       SD_DOMAIN: service-discovery
       SD_PORT: 4040
-      REDIS: redis
-      REDIS_PORT: 6379
+      REDIS1: redis1
+      REDIS_PORT1: 6380
+      REDIS2: redis2
+      REDIS_PORT2: 6381
     depends_on:
       - school-service
       - course-service
@@ -185,10 +191,22 @@ services:
     expose:
       - "4040"
 
-  redis:
+  redis1:
     image: redis:latest
-    container_name: redis
+    container_name: redis1
+    command: --port 6380
     networks:
       - school-network
     ports:
-      - "6378:6379"
+      - "6380:6380"
+
+  redis2:
+    image: redis:latest
+    container_name: redis2
+    command: --port 6381
+    networks:
+      - school-network
+    ports:
+      - "6381:6381"
+
+

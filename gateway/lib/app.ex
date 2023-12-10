@@ -3,9 +3,13 @@ defmodule APIGateway do
   require Logger
 
   def start(_type, _args) do
-    redisDomain = System.get_env("REDIS", "localhost")
-    redisPort =System.get_env("REDIS_PORT", "6379")
-    redisPort = String.to_integer(redisPort)
+    redisDomain1 = System.get_env("REDIS1", "localhost")
+    redisPort1 = System.get_env("REDIS_PORT1", "6379")
+    redisPort1 = String.to_integer(redisPort1)
+
+    redisDomain2 = System.get_env("REDIS2", "localhost")
+    redisPort2 = System.get_env("REDIS_PORT2", "6379")
+    redisPort2 = String.to_integer(redisPort2)
 
     childrenSD = [{SDClient, []}]
 
@@ -64,10 +68,19 @@ defmodule APIGateway do
 
     children = [
       {Plug.Cowboy, scheme: :http, plug: Gateway, options: [port: 8080]},
-      {Redix, host: redisDomain, name: :redix, port: redisPort},
+      Supervisor.child_spec({Redix, host: redisDomain1, name: :redix1, port: redisPort1},
+        id: :my_redis_1
+      ),
+      Supervisor.child_spec({Redix, host: redisDomain2, name: :redix2, port: redisPort2},
+        id: :my_redis_2
+      ),
       {DynamicSupervisor, strategy: :one_for_one, name: DynamicServices.Supervisor}
       | children
     ]
+
+    HashRing.Managed.new(:myring)
+    HashRing.Managed.add_node(:myring, :redix1)
+    HashRing.Managed.add_node(:myring, :redix2)
 
     opts = [strategy: :one_for_one, name: Gateway.Supervisor]
     Logger.info("Gateway started.")

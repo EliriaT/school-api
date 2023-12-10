@@ -3,8 +3,10 @@ defmodule Auth.Client do
   require Logger
 
   @timeout 4000
-
   @gen_server_timeout 10000
+
+  @serviceType "school"
+  @actualServiceType "auth"
 
   def start_link(conn, uuidName) do
     name = {:via, Registry, {PidRegistry, uuidName}}
@@ -15,20 +17,170 @@ defmodule Auth.Client do
     {:ok, conn}
   end
 
-  def get_user(pid, id) do
-    GenServer.call(pid, {:get_user, id}, @gen_server_timeout)
+  def get_user(id, 2) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@actualServiceType, address)
+        GenServer.call(pid, {:get_user, id}, @gen_server_timeout)
+
+      _ ->
+        {:unavailable}
+    end
   end
 
-  def validate(pid,token) do
-    GenServer.call(pid, {:token_check, token}, @gen_server_timeout)
+  def get_user(id, rerouteCounter) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@actualServiceType, address)
+        reply = GenServer.call(pid, {:get_user, id}, @gen_server_timeout)
+
+        case reply do
+          {:error, error} ->
+            # inseamneaza in circuit breaker
+
+            # increment reroute counter
+            rerouteCounter = rerouteCounter + 1
+            Logger.info("Rerouting happened")
+
+            # reroute
+            Auth.Client.get_user(id, rerouteCounter)
+
+          {:ok, user} ->
+            {:ok, user}
+        end
+
+      _ ->
+        {:unavailable}
+    end
   end
 
-  def login(pid,loginReq) do
-    GenServer.call(pid, {:login, loginReq}, @gen_server_timeout)
+  def validate(token, 2) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@actualServiceType, address)
+        GenServer.call(pid, {:token_check, token}, @gen_server_timeout)
+
+      _ ->
+        {:unavailable}
+    end
   end
 
-  def register(pid,registerReq) do
-    GenServer.call(pid, {:register, registerReq}, @gen_server_timeout)
+  def validate(token, rerouteCounter) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@actualServiceType, address)
+        reply = GenServer.call(pid, {:token_check, token}, @gen_server_timeout)
+
+        case reply do
+          {:error, error} ->
+            # inseamneaza in circuit breaker
+
+            # increment reroute counter
+            rerouteCounter = rerouteCounter + 1
+            Logger.info("Rerouting happened")
+
+            # reroute
+            Auth.Client.validate(token, rerouteCounter)
+
+          {:ok, user} ->
+            {:ok, user}
+        end
+
+      _ ->
+        {:unavailable}
+    end
+  end
+
+  def login(loginReq, 2) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@actualServiceType, address)
+        GenServer.call(pid, {:login, loginReq}, @gen_server_timeout)
+
+      _ ->
+        {:unavailable}
+    end
+  end
+
+  def login(loginReq, rerouteCounter) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@actualServiceType, address)
+        reply = GenServer.call(pid, {:login, loginReq}, @gen_server_timeout)
+
+        case reply do
+          {:error, error} ->
+            # inseamneaza in circuit breaker
+
+            # increment reroute counter
+            rerouteCounter = rerouteCounter + 1
+            Logger.info("Rerouting happened")
+
+            # reroute
+            Auth.Client.login(loginReq, rerouteCounter)
+
+          {:ok, user} ->
+            {:ok, user}
+        end
+
+      _ ->
+        {:unavailable}
+    end
+  end
+
+  # on 2 redirect send response as it is
+  def register(registerReq, 2) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@actualServiceType, address)
+        GenServer.call(pid, {:register, registerReq}, @gen_server_timeout)
+
+      _ ->
+        {:unavailable}
+    end
+  end
+
+  # eu pot aici sa fac circuit breaker : )
+  def register(registerReq, rerouteCounter) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@actualServiceType, address)
+        reply = GenServer.call(pid, {:register, registerReq}, @gen_server_timeout)
+
+        case reply do
+          {:error, error} ->
+            # inseamneaza in circuit breaker
+
+            # increment reroute counter
+            rerouteCounter = rerouteCounter + 1
+            Logger.info("Rerouting happened")
+
+            # reroute
+            Auth.Client.register(registerReq, rerouteCounter)
+
+          {:ok, user} ->
+            {:ok, user}
+        end
+
+      _ ->
+        {:unavailable}
+    end
   end
 
   def handle_call({:get_user, id}, _from, conn) do
