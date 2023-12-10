@@ -80,14 +80,14 @@ Some similar LMS systems that employ microservices are: edX, canvas, Google Clas
 ## Define Service Boundaries
 
 There will be 3 main microservices:
-1. **User Service** - responsible for creating users, authentication and authorization of users
-2. **Schools Administration Service** - responsible for creating schools, new semesters, classes
-3. **Lessons Service** - responsible for creating courses and lessons, marking attendance and registering marks, 
+1. **Schools Administration Service** - responsible for creating users, students, creating schools, classes
+2. **Lessons Service** - responsible for creating courses and lessons, marking attendance and registering marks, 
 viewing the schedule
 
 System architecture diagram: 
 
-![ArchitectureDiagramPAD](https://github.com/EliriaT/school-api/assets/67596753/d2e82d48-7f50-4986-8158-b4b9b7adbb8e)
+![Architecture Diagram PADLab2 drawio](https://github.com/EliriaT/school-api/assets/67596753/c666ef0a-c599-4cc2-9f22-2ecefe0176de)
+
 
 
 ## Choose Technology Stack and Communication Patterns
@@ -107,18 +107,16 @@ The Gateway will serve as synchronous RPC Client, and thus the communication wil
 
 Each service will have each its own PostgreSQL database.
 
-### **User Service**
-
-![User Service](https://github.com/EliriaT/school-api/assets/67596753/18a114f9-f38b-474f-b8f3-cfd8f82b4171)
-
 ### **Schools Administration Service**
 
-![Schools Administration Service(1)](https://github.com/EliriaT/school-api/assets/67596753/c738bd33-63a6-44a6-a2a6-1e70ca48e916)
+![Schools Administration Service](https://github.com/EliriaT/school-api/assets/67596753/7ceceb0f-5f31-4205-8fb9-f00f42a44f24)
+
 
 
 ### **Lessons Service**
 
-![LessonsService](https://github.com/EliriaT/school-api/assets/67596753/e44665b9-afac-4775-91ea-4b640b8c4d24)
+![LessonsService](https://github.com/EliriaT/school-api/assets/67596753/bc6cafae-d094-41d1-a9fb-ce4adbecca4b)
+
 
 ### **External Endpoints**
 
