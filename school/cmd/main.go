@@ -7,9 +7,13 @@ import (
 	"github.com/EliriaT/school-api/school/internal/services/school"
 	config "github.com/EliriaT/school-api/school/pkg/config"
 	"github.com/EliriaT/school-api/school/pkg/pb"
+	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"log"
 	"net"
+	"net/http"
 )
 
 func main() {
@@ -34,7 +38,19 @@ func main() {
 	authServer := auth.AuthServer{Handler: handler, Jwt: jwt, Config: config}
 	schoolServer := school.SchoolServer{Handler: handler}
 
-	grpcServer := grpc.NewServer()
+	srvMetrics := grpcprom.NewServerMetrics(
+		grpcprom.WithServerHandlingTimeHistogram(
+			grpcprom.WithHistogramBuckets([]float64{0.001, 0.01, 0.1, 0.3, 0.6, 1, 3, 6, 9, 20, 30, 60, 90, 120}),
+		),
+	)
+
+	grpcServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
+		srvMetrics.UnaryServerInterceptor(),
+	))
+
+	reg := prometheus.NewRegistry()
+	reg.MustRegister(srvMetrics)
+	srvMetrics.InitializeMetrics(grpcServer)
 
 	pb.RegisterAuthServiceServer(grpcServer, &authServer)
 	pb.RegisterSchoolServiceServer(grpcServer, &schoolServer)
@@ -50,6 +66,15 @@ func main() {
 	}
 
 	log.Printf("School service %s registered to Service Discovery", config.MyUrl)
+
+	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+	go func() {
+		if err := http.ListenAndServe(":2112", nil); err != nil {
+			log.Fatal(err)
+		} else {
+			log.Println("HTTP server listening at 2112")
+		}
+	}()
 
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("Failed to accept conn:  %v", err)

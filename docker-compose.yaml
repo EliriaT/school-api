@@ -107,8 +107,10 @@ services:
     restart: always
     ports:
       - "8081:8081"
+      - "2112:2112"
     expose:
       - "8081"
+      - "2112"
     entrypoint:
       [
         "/school/wait-for.sh",
@@ -209,4 +211,33 @@ services:
     ports:
       - "6381:6381"
 
+  prometheus:
+    image: prom/prometheus:v2.37.9
+    container_name: prometheus
+    networks:
+      - school-network
+    ports:
+      - "9090:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    restart: unless-stopped
 
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    networks:
+      - school-network
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+
+volumes:
+  grafana-data:
+    driver: local
+  prometheus-data:
+    driver: local
