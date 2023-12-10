@@ -18,6 +18,7 @@ defmodule Course.Client do
 
   def create_course(body, 2) do
     %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+    Logger.info("Too many reroutes happened")
 
     case status do
       200 ->
@@ -56,6 +57,7 @@ defmodule Course.Client do
 
   def create_lesson(body, 2) do
     %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+    Logger.info("Too many reroutes happened")
 
     case status do
       200 ->
@@ -94,6 +96,7 @@ defmodule Course.Client do
 
   def create_mark(body, 2) do
     %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+    Logger.info("Too many reroutes happened")
 
     case status do
       200 ->
@@ -132,6 +135,7 @@ defmodule Course.Client do
 
   def get_course(id, 2) do
     %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+    Logger.info("Too many reroutes happened")
 
     case status do
       200 ->

@@ -19,6 +19,7 @@ defmodule Auth.Client do
 
   def get_user(id, 2) do
     %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+    Logger.info("Too many reroutes happened")
 
     case status do
       200 ->
@@ -60,6 +61,7 @@ defmodule Auth.Client do
 
   def validate(token, 2) do
     %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+    Logger.info("Too many reroutes happened")
 
     case status do
       200 ->
@@ -101,6 +103,7 @@ defmodule Auth.Client do
 
   def login(loginReq, 2) do
     %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+    Logger.info("Too many reroutes happened")
 
     case status do
       200 ->
@@ -143,6 +146,7 @@ defmodule Auth.Client do
   # on 2 redirect send response as it is
   def register(registerReq, 2) do
     %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+    Logger.info("Too many reroutes happened")
 
     case status do
       200 ->
