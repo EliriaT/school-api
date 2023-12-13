@@ -11,6 +11,11 @@ defmodule APIGateway do
     redisPort2 = System.get_env("REDIS_PORT2", "6379")
     redisPort2 = String.to_integer(redisPort2)
 
+    redisDomain3 = System.get_env("REDIS3", "localhost")
+    redisPort3 = System.get_env("REDIS_PORT3", "6379")
+    redisPort3 = String.to_integer(redisPort3)
+
+
     childrenSD = [{SDClient, []}]
 
     case Supervisor.start_link(childrenSD, strategy: :one_for_one) do
@@ -74,6 +79,10 @@ defmodule APIGateway do
       Supervisor.child_spec({Redix, host: redisDomain2, name: :redix2, port: redisPort2},
         id: :my_redis_2
       ),
+      Supervisor.child_spec({Redix, host: redisDomain3, name: :redix3, port: redisPort3},
+        id: :my_redis_3
+      ),
+       Supervisor.child_spec({RedisManager, []},  id: :redis_manager),
       {DynamicSupervisor, strategy: :one_for_one, name: DynamicServices.Supervisor}
       | children
     ]
@@ -81,6 +90,7 @@ defmodule APIGateway do
     HashRing.Managed.new(:myring)
     HashRing.Managed.add_node(:myring, :redix1)
     HashRing.Managed.add_node(:myring, :redix2)
+    HashRing.Managed.add_node(:myring, :redix3)
 
     opts = [strategy: :one_for_one, name: Gateway.Supervisor]
     Logger.info("Gateway started.")

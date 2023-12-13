@@ -165,6 +165,8 @@ services:
       REDIS_PORT1: 6380
       REDIS2: redis2
       REDIS_PORT2: 6381
+      REDIS3: redis3
+      REDIS_PORT3: 6382
     depends_on:
       - school-service
       - course-service
@@ -210,6 +212,15 @@ services:
       - school-network
     ports:
       - "6381:6381"
+
+  redis3:
+    image: redis:latest
+    container_name: redis3
+    command: --port 6382
+    networks:
+      - school-network
+    ports:
+      - "6382:6382"
 
   prometheus:
     image: prom/prometheus:v2.37.9
