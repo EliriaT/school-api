@@ -8,6 +8,7 @@ import (
 	"github.com/EliriaT/school-api/course/pkg/pb"
 	"log"
 	"net/http"
+	"time"
 )
 
 type CourseServer struct {
@@ -64,12 +65,19 @@ func (c *CourseServer) CreateCourse(ctx context.Context, request *pb.CourseReque
 	course.ClassID = request.ClassId
 	course.TeacherID = request.TeacherId
 
-	result := c.Handler.DB.Create(&course)
-	if result.Error != nil {
-		return &pb.CourseCreateResponse{
-			Status: http.StatusInternalServerError,
-			Error:  result.Error.Error()}, nil
+	// for testing saga, user should be deleted after
+	testingSaga := true
+	if testingSaga {
+		time.Sleep(time.Second * 10)
+	} else {
+		result := c.Handler.DB.Create(&course)
+		if result.Error != nil {
+			return &pb.CourseCreateResponse{
+				Status: http.StatusInternalServerError,
+				Error:  result.Error.Error()}, nil
+		}
 	}
+
 	return &pb.CourseCreateResponse{Status: http.StatusCreated}, nil
 }
 

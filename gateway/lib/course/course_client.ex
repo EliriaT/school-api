@@ -41,10 +41,10 @@ defmodule Course.Client do
         case reply do
           {:error, error} ->
             rerouteCounter = rerouteCounter + 1
-            Logger.info("Rerouting happened")
+            Logger.info("Rerouting happened #{rerouteCounter}")
 
             # reroute
-            Course.Client.create_school(body, rerouteCounter)
+            Course.Client.create_course(body, rerouteCounter)
 
           {:ok, response} ->
             {:ok, response}
@@ -80,7 +80,7 @@ defmodule Course.Client do
         case reply do
           {:error, error} ->
             rerouteCounter = rerouteCounter + 1
-            Logger.info("Rerouting happened")
+            Logger.info("Rerouting happened #{rerouteCounter}")
 
             # reroute
             Course.Client.create_lesson(body, rerouteCounter)
@@ -119,7 +119,7 @@ defmodule Course.Client do
         case reply do
           {:error, error} ->
             rerouteCounter = rerouteCounter + 1
-            Logger.info("Rerouting happened")
+            Logger.info("Rerouting happened #{rerouteCounter}")
 
             # reroute
             Course.Client.create_mark(body, rerouteCounter)
@@ -159,7 +159,7 @@ defmodule Course.Client do
           {:error, error} ->
             # increment reroute counter
             rerouteCounter = rerouteCounter + 1
-            Logger.info("Rerouting happened")
+            Logger.info("Rerouting happened #{rerouteCounter}")
 
             # reroute
             Course.Client.get_course(id, rerouteCounter)

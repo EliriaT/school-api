@@ -9,9 +9,15 @@ service AuthService {
   rpc Register(RegisterRequest) returns (RegisterResponse) {}
   rpc Login(LoginRequest) returns (LoginResponse) {}
   rpc Validate(ValidateRequest) returns (ValidateResponse) {}
+  rpc DeleteUser(EntityID) returns (DeleteResponse) {}
 }
 
 message EntityID { int64 id = 1; }
+
+message DeleteResponse {
+  int64 status = 1;
+  string error = 2;
+}
 
 message UserResponse {
   int64 status = 1;
@@ -37,7 +43,8 @@ message RegisterRequest {
 
 message RegisterResponse {
   int64 status = 1;
-  string error = 2;
+  int64 userId = 2;
+  string error = 3;
 }
 
 message LoginRequest {

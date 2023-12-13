@@ -17,6 +17,49 @@ defmodule Auth.Client do
     {:ok, conn}
   end
 
+  def delete_user(id, 2) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+    Logger.info("Too many reroutes happened")
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@actualServiceType, address)
+        GenServer.call(pid, {:delete_user, id}, @gen_server_timeout)
+
+      _ ->
+        {:unavailable}
+    end
+  end
+
+  def delete_user(id, rerouteCounter) do
+    %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
+    Logger.info("Starting deletion of teacher user #{id}")
+
+    case status do
+      200 ->
+        pid = SDClient.getProcessPid(@actualServiceType, address)
+        reply = GenServer.call(pid, {:delete_user, id}, @gen_server_timeout)
+
+        case reply do
+          {:error, error} ->
+            # inseamneaza in circuit breaker
+
+            # increment reroute counter
+            rerouteCounter = rerouteCounter + 1
+            Logger.info("Rerouting happened #{rerouteCounter}")
+
+            # reroute
+            Auth.Client.delete_user(id, rerouteCounter)
+
+          {:ok, response} ->
+            {:ok, response}
+        end
+
+      _ ->
+        {:unavailable}
+    end
+  end
+
   def get_user(id, 2) do
     %{"service" => address, "status" => status} = SDClient.loadBalanceService(@serviceType)
     Logger.info("Too many reroutes happened")
@@ -45,7 +88,7 @@ defmodule Auth.Client do
 
             # increment reroute counter
             rerouteCounter = rerouteCounter + 1
-            Logger.info("Rerouting happened")
+            Logger.info("Rerouting happened #{rerouteCounter}")
 
             # reroute
             Auth.Client.get_user(id, rerouteCounter)
@@ -87,7 +130,7 @@ defmodule Auth.Client do
 
             # increment reroute counter
             rerouteCounter = rerouteCounter + 1
-            Logger.info("Rerouting happened")
+            Logger.info("Rerouting happened #{rerouteCounter}")
 
             # reroute
             Auth.Client.validate(token, rerouteCounter)
@@ -129,7 +172,7 @@ defmodule Auth.Client do
 
             # increment reroute counter
             rerouteCounter = rerouteCounter + 1
-            Logger.info("Rerouting happened")
+            Logger.info("Rerouting happened #{rerouteCounter}")
 
             # reroute
             Auth.Client.login(loginReq, rerouteCounter)
@@ -173,7 +216,7 @@ defmodule Auth.Client do
 
             # increment reroute counter
             rerouteCounter = rerouteCounter + 1
-            Logger.info("Rerouting happened")
+            Logger.info("Rerouting happened #{rerouteCounter}")
 
             # reroute
             Auth.Client.register(registerReq, rerouteCounter)
@@ -227,6 +270,12 @@ defmodule Auth.Client do
   def handle_call({:token_check, token}, _from, conn) do
     request = %Auth.ValidateRequest{token: token}
     resp = conn |> Auth.AuthService.Stub.validate(request, timeout: @timeout)
+    {:reply, resp, conn}
+  end
+
+  def handle_call({:delete_user, id}, _from, conn) do
+    request = %Auth.EntityID{id: id}
+    resp = conn |> Auth.AuthService.Stub.delete_user(request, timeout: @timeout)
     {:reply, resp, conn}
   end
 end

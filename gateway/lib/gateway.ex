@@ -1,6 +1,7 @@
 # elixir --no-halt lib/gateway.ex
 # iex -S mix run
 # Gateway.start(nil,nil)
+# PATH=~/.mix/escripts:$PATH
 # protoc --elixir_out=plugins=grpc:. ./lib/auth/auth.proto
 
 defmodule Gateway do
@@ -32,7 +33,6 @@ defmodule Gateway do
         "schoolId" => schoolId,
         "roleId" => roleId
       } = body ->
-
         # here service high availability and circuit breaker happens
         reply = Auth.Client.register(body, 0)
 
@@ -611,6 +611,173 @@ defmodule Gateway do
         conn
         |> put_resp_content_type("application/json")
         |> send_resp(400, '')
+    end
+  end
+
+  post "/teacher/course" do
+    case conn.body_params do
+      %{
+        "email" => email,
+        "password" => password,
+        "name" => name,
+        "schoolId" => schoolId,
+        "roleId" => roleId,
+        "classId" => classId,
+        "course_name" => course_name
+      } = body ->
+        reply =
+          Auth.Client.register(
+            %{
+              "email" => email,
+              "password" => password,
+              "name" => name,
+              "schoolId" => schoolId,
+              "roleId" => roleId
+            },
+            0
+          )
+
+        case reply do
+          {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+            Logger.info("No service is available")
+
+            conn
+            |> put_resp_header("Connection", "close")
+            |> send_resp(408, "Request timeout")
+
+          {:error, error} ->
+            Logger.info("No service is available")
+
+            send_resp(conn, 500, error)
+
+          {:unavailable} ->
+            conn
+            |> put_resp_content_type("application/json")
+            |> send_resp(503, 'unavailable')
+
+          {:ok, user} ->
+            jsonResp = Protobuf.JSON.encode(user)
+
+            case jsonResp do
+              {:ok, jsonResp} ->
+                case user.status do
+                  201 ->
+                    # Teacher was created successfully, so now lets create the course for that teacher
+
+                    # retrieve teacherId
+                    teacherId = user.userId
+                    Logger.info("Teacher was created succesfully")
+
+                    createCourse(conn, %{
+                      "classId" => "#{classId}",
+                      "name" => course_name,
+                      "teacherId" => "#{teacherId}"
+                    })
+
+                    conn
+                    |> put_resp_content_type("application/json")
+                    |> send_resp(user.status, jsonResp)
+
+                  _ ->
+                    conn
+                    |> put_resp_content_type("application/json")
+                    |> send_resp(user.status, jsonResp)
+                end
+
+              {:error, _} ->
+                send_resp(conn, 500, "json encoding failed")
+            end
+        end
+
+      _ ->
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(400, '')
+    end
+  end
+
+  def createCourse(
+        conn,
+        %{
+          "classId" => classId,
+          "name" => course_name,
+          "teacherId" => teacherId
+        } = request
+      ) do
+    reply = Course.Client.create_course(request, 0)
+
+    case reply do
+      {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+        Logger.info("Failed to create the teacher. Reason timeone. ")
+
+        # delete user
+        deleteTeacherUser(conn, teacherId)
+
+        conn
+        |> put_resp_header("Connection", "close")
+        |> send_resp(408, "Request timeout")
+
+      {:error, error} ->
+        Logger.info("Failed to create the teacher. Reason 500.")
+
+        # delete user
+        deleteTeacherUser(conn, teacherId)
+
+        send_resp(conn, 500, error)
+
+      {:unavailable} ->
+        Logger.info("Failed to create the teacher. Reason no services available.")
+
+        # delete user
+        deleteTeacherUser(conn, teacherId)
+
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(503, 'unavailable')
+
+      {:ok, protoReply} ->
+        jsonResp = Protobuf.JSON.encode(protoReply)
+
+        case jsonResp do
+          {:ok, jsonResp} ->
+            Logger.info("Course created succesfully for teacher #{teacherId}. ")
+
+            conn
+            |> put_resp_content_type("application/json")
+            |> send_resp(protoReply.status, jsonResp)
+
+          {:error, _} ->
+            send_resp(conn, 500, "json encoding failed")
+        end
+    end
+  end
+
+  def deleteTeacherUser(conn, teacherId) do
+    teacherId = String.to_integer(teacherId)
+    reply = Auth.Client.delete_user(teacherId, 0)
+
+    case reply do
+      {:error, %GRPC.RPCError{message: "timeout when waiting for server", status: _}} ->
+        Logger.info("Failed to delete teacher user #{teacherId}")
+
+        conn
+        |> put_resp_header("Connection", "close")
+        |> send_resp(408, "Request timeout")
+
+      {:error, error} ->
+        Logger.info("Failed to delete teacher user #{teacherId}")
+
+        send_resp(conn, 500, error)
+
+      {:unavailable} ->
+        Logger.info("Failed to delete teacher user #{teacherId}")
+
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(503, 'unavailable')
+
+      {:ok, response} ->
+        nil
     end
   end
 
